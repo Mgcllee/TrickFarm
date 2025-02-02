@@ -1,0 +1,5 @@
+# GitHub ignore file
+
+.vs/
+obj/
+Properties/
