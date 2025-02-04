@@ -1,2 +1,3 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿// Add Microsoft.Orleans.Core Nuget package
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
