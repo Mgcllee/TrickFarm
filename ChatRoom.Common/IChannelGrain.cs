@@ -9,7 +9,14 @@ using Orleans.Runtime;
 
 namespace ChatRoom;
 
+/*
+Orleans가 Grain을 추적하는 데 사용하는 식별자에 대해 클래스를 다른 데이터 형식(예: 문자열 또는 정수)으로 표시합니다.
+즉, Grain 인터페이스는 IGrainWith___ 인터페이스를 상속 받아서 사용해야 한다.
+그리고 Grain 클래스에서 Grain 인터페이스를 상속받아 구현한다.
+*/
+
 public interface IChannelGrain : IGrainWithStringKey
 {
-
+    // TODO: Task, StreamId(Orleans.Streaming Nuget Package) 연구
+    Task<StreamId> Join(string nickname);
 }
