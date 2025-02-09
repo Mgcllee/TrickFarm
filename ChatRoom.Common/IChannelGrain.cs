@@ -19,4 +19,5 @@ public interface IChannelGrain : IGrainWithStringKey
 {
     // TODO: Task, StreamId(Orleans.Streaming Nuget Package) 연구
     Task<StreamId> Join(string nickname);
+    Task<StreamId> Leave(string nickname);
 }
