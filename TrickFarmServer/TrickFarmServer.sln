@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35818.85 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrickFarmServer", "TrickFarmServer\TrickFarmServer.csproj", "{845FB751-A906-4085-A695-FEBA805CE5EF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{845FB751-A906-4085-A695-FEBA805CE5EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{845FB751-A906-4085-A695-FEBA805CE5EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{845FB751-A906-4085-A695-FEBA805CE5EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{845FB751-A906-4085-A695-FEBA805CE5EF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AC52AEE0-1660-4C21-A974-D40EA6D2E1C2}
+	EndGlobalSection
+EndGlobal
