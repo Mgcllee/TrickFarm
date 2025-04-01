@@ -1,16 +1,26 @@
 ﻿using System.Collections.Concurrent;
 
-public class ChatRoomGrain : IChatRoomGrain
+public class ChatRoomGrain : Grain, IChatRoomGrain
 {
     private readonly List<string> chat_log = new();
-    private readonly ConcurrentDictionary<string, IChatClient> clients
-        = new ConcurrentDictionary<string, IChatClient>();
+    private readonly ConcurrentDictionary<string, bool> clients
+        = new ConcurrentDictionary<string, bool>();
 
-    public Task<bool> join_user(string user_guid, IChatClient new_member)
+    public override Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        if (clients.TryAdd(user_guid, new_member))
+        Console.WriteLine($"[{this.GetPrimaryKey()}] 채팅룸이 생성되었습니다.");
+        return Task.CompletedTask;
+    }
+
+    public Task<bool> join_user(string user_name)
+    {
+        if (clients.TryAdd(user_name, false))
         {
-            Console.WriteLine($"{user_guid}님이 방에 입장하셨습니다.");
+            if (clients.Count() == 1)
+            {
+                clients[user_name] = true; // (임시) 방장으로 설정
+            }
+            Console.WriteLine($"{user_name}님이 방에 입장하셨습니다.");
             return Task.FromResult(true);
         }
         else
@@ -19,20 +29,28 @@ public class ChatRoomGrain : IChatRoomGrain
         }
     }
 
-    public Task<bool> leave_user(string user_guid) 
+    public Task<bool> leave_user(string user_name) 
     { 
-        if(clients.TryRemove(user_guid, out var value))
+        if(clients.TryRemove(user_name, out var value))
         {
-            Console.WriteLine($"{user_guid}님이 방을 떠났습니다.");
-            return Task.FromResult(true);
+            Console.WriteLine($"{user_name}님이 방을 떠났습니다.");
         }
-        else
+
+        if(clients.Count() == 0)
         {
-            return Task.FromResult(false);
+            DeactivateOnIdle();
         }
+
+        return Task.FromResult(false);
     }
     public Task<List<string>> get_chat_log()
     {
         return Task.FromResult(chat_log);
+    }
+
+    public override Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
+    {
+        Console.WriteLine($"방 {this.GetPrimaryKey()} 이 제거되었습니다.");
+        return base.OnDeactivateAsync(reason, cancellationToken);
     }
 }

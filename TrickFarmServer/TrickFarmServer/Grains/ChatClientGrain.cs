@@ -4,6 +4,7 @@ public class ChatClientGrain : Grain, IChatClientGrain
     private IGrainFactory _grainFactory = null!;
     private Guid user_guid;
     private string user_name = null!;
+    private string user_chatroom_name = null!;
     private int user_level = 1;
     private int user_exp = 0;
 
@@ -23,9 +24,15 @@ public class ChatClientGrain : Grain, IChatClientGrain
         return Task.CompletedTask;
     }
 
+    public Task join_chat_room(string chatroom_name)
+    {
+        user_chatroom_name = chatroom_name;
+        return Task.CompletedTask;
+    }
+
     public Task print_recv_message(string message)
     {
-        Console.WriteLine($"{user_name}: {message}");
+        Console.WriteLine($"[{user_chatroom_name}][{user_name}]: {message}");
         return Task.CompletedTask;
     }
 
