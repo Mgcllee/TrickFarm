@@ -34,7 +34,7 @@ public class ChatClientGrain : Grain, IChatClientGrain
      {
          while (true)
          {
-             string message = await _tcpClient.recv_client_chat_message();
+             string message = " "; // = await _tcpClient.recv_client_chat_message();
              if (message.Length <= 0)
              {
                  continue;
@@ -65,12 +65,6 @@ public class ChatClientGrain : Grain, IChatClientGrain
         return Task.CompletedTask;
     }
 
-    public Task set_tcp_client(TcpClient tcpClient)
-    {
-        _tcpClient = new ChatClient(tcpClient);
-        return Task.CompletedTask;
-    }
-
     public Task join_chat_room(string chatroom_name)
     {
         user_chatroom_name = chatroom_name;
@@ -87,7 +81,7 @@ public class ChatClientGrain : Grain, IChatClientGrain
 
     public Task send_to_client(string message)
     {
-        _ = _tcpClient.send_to_client_chat_message(message);
+        // _ = _tcpClient.send_to_client_chat_message(message);
         return Task.CompletedTask;
     }
 

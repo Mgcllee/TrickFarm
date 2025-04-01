@@ -2,7 +2,6 @@
 
 public interface IChatClientGrain : IGrainWithGuidKey
 {
-    Task set_tcp_client(TcpClient tcpClient);
     Task recv_client_message(string message);
     Task packet_worker();
     Task leave_client();
