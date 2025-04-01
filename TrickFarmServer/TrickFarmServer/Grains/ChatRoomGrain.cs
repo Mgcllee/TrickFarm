@@ -3,8 +3,8 @@
 public class ChatRoomGrain : Grain, IChatRoomGrain
 {
     private readonly List<string> chat_log = new();
-    private readonly ConcurrentDictionary<string, bool> clients
-        = new ConcurrentDictionary<string, bool>();
+    private readonly ConcurrentDictionary<Guid, string> clients
+        = new ConcurrentDictionary<Guid, string>();
 
     public override Task OnActivateAsync(CancellationToken cancellationToken)
     {
@@ -12,14 +12,10 @@ public class ChatRoomGrain : Grain, IChatRoomGrain
         return Task.CompletedTask;
     }
 
-    public Task<bool> join_user(string user_name)
+    public Task<bool> join_user(Guid user_guid, string user_name)
     {
-        if (clients.TryAdd(user_name, false))
+        if (clients.TryAdd(user_guid, user_name))
         {
-            if (clients.Count() == 1)
-            {
-                clients[user_name] = true; // (임시) 방장으로 설정
-            }
             Console.WriteLine($"{user_name}님이 방에 입장하셨습니다.");
             return Task.FromResult(true);
         }
@@ -28,12 +24,27 @@ public class ChatRoomGrain : Grain, IChatRoomGrain
             return Task.FromResult(false);
         }
     }
+    public Task<List<string>> get_chat_log()
+    {
+        return Task.FromResult(chat_log);
+    }
 
-    public Task<bool> leave_user(string user_name) 
-    { 
-        if(clients.TryRemove(user_name, out var value))
+    public Task broadcast_message(string formatted_message)
+    {
+        chat_log.Add(formatted_message);
+        foreach (var client in clients)
         {
-            Console.WriteLine($"{user_name}님이 방을 떠났습니다.");
+            var client_grain = GrainFactory.GetGrain<IChatClientGrain>(client.Key);
+            client_grain.send_to_client(formatted_message);
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task<bool> leave_user(Guid user_guid) 
+    { 
+        if(clients.TryRemove(user_guid, out var value))
+        {
+            Console.WriteLine($"{value}님이 방을 떠났습니다.");
         }
 
         if(clients.Count() == 0)
@@ -42,10 +53,6 @@ public class ChatRoomGrain : Grain, IChatRoomGrain
         }
 
         return Task.FromResult(false);
-    }
-    public Task<List<string>> get_chat_log()
-    {
-        return Task.FromResult(chat_log);
     }
 
     public override Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)

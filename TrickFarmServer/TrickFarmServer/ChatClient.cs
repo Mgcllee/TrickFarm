@@ -13,7 +13,7 @@ public class ChatClient : IChatClient
         return Encoding.UTF8.GetString(buffer, 0, len);
     }
 
-    public async Task<string> recv_chat_message()
+    public async Task<string> recv_client_chat_message()
     {
         byte[] buffer = new byte[1024];
         int recv_bytes = await _tcpClient.GetStream().ReadAsync(buffer, 0, buffer.Length);
@@ -25,7 +25,7 @@ public class ChatClient : IChatClient
         return "";
     }
 
-    public async Task send_chat_message(string message)
+    public async Task send_to_client_chat_message(string message)
     {
         byte[] buffer = Encoding.UTF8.GetBytes(message);
         await _tcpClient.GetStream().WriteAsync(buffer, 0, buffer.Length);

@@ -40,47 +40,11 @@ class TcpChatServer
         {
             var db_guid = Program.user_db.StringGet(new_user_guid.ToString());
             Console.WriteLine($"Redis에 기록 성공! 어서오세요 {db_guid}님");
+            await client_grain.packet_worker();
         }
         else
         {
             Console.WriteLine("Redis에 기록 실패...");
-            _clients.TryRemove(user_name, out var clientGrain);
-            client_socket.Close();
-            Console.WriteLine("클라이언트 연결 해제됨");
-            return;
-        }
-
-        try
-        {
-            bool enter_chatroom = false;
-            while (client_socket.Connected)
-            {
-                string message = await _clients[user_name].recv_chat_message();
-                if (message == "leave")
-                {
-                    await client_grain.leave_client();
-                    break;
-                }
-                else if(message.Contains("join ") && false == enter_chatroom)
-                {
-                    string chatroom_name = message.Split(new[] { ' ' }, 2)[1];
-                    var chatroom_grain = _grainFactory.GetGrain<IChatRoomGrain>(chatroom_name);
-                    await chatroom_grain.join_user(user_name);
-                    await client_grain.join_chat_room(chatroom_name);
-                    enter_chatroom = true;
-                }
-                else if(enter_chatroom)
-                {
-                    await client_grain.print_recv_message(message);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"오류 발생: {ex.Message}");
-        }
-        finally
-        {
             _clients.TryRemove(user_name, out var clientGrain);
             client_socket.Close();
             Console.WriteLine("클라이언트 연결 해제됨");
