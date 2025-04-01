@@ -5,6 +5,8 @@ VisualStudioVersion = 17.13.35818.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrickFarmServer", "TrickFarmServer\TrickFarmServer.csproj", "{845FB751-A906-4085-A695-FEBA805CE5EF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrickFarmServerDummyClient", "TrickFarmServerDummyClient\TrickFarmServerDummyClient.csproj", "{628764E6-4759-4009-8AE1-324E865935FC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,14 @@ Global
 		{845FB751-A906-4085-A695-FEBA805CE5EF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{845FB751-A906-4085-A695-FEBA805CE5EF}.Release|x64.ActiveCfg = Release|x64
 		{845FB751-A906-4085-A695-FEBA805CE5EF}.Release|x64.Build.0 = Release|x64
+		{628764E6-4759-4009-8AE1-324E865935FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{628764E6-4759-4009-8AE1-324E865935FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{628764E6-4759-4009-8AE1-324E865935FC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{628764E6-4759-4009-8AE1-324E865935FC}.Debug|x64.Build.0 = Debug|Any CPU
+		{628764E6-4759-4009-8AE1-324E865935FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{628764E6-4759-4009-8AE1-324E865935FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{628764E6-4759-4009-8AE1-324E865935FC}.Release|x64.ActiveCfg = Release|Any CPU
+		{628764E6-4759-4009-8AE1-324E865935FC}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
