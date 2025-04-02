@@ -7,6 +7,8 @@ class TcpChatServer
 {
     private readonly IGrainFactory _grainFactory;
     private readonly TcpListener _listener;
+    private ClientConnector client_connector = null!;
+    private RedisConnector redis_connector = null!;
 
     public TcpChatServer(IGrainFactory grainFactory, int port)
     {
@@ -14,34 +16,41 @@ class TcpChatServer
         _listener = new TcpListener(IPAddress.Any, port);
     }
 
-    public async Task StartAsync()
+    public async Task StartAsync(ClientConnector client_connector, RedisConnector redis_connector)
     {
+        this.client_connector = client_connector;
+        this.redis_connector = redis_connector;
         _listener.Start();
-        Console.WriteLine("채팅 서버 시작됨");
+
+        Console.WriteLine("[Start] server listening socket");
 
         while (true)
         {
-            var client = await _listener.AcceptTcpClientAsync();
-            Console.WriteLine("클라이언트 연결됨");
-            _ = HandleClientAsync(client);
+            var client_socket = await _listener.AcceptTcpClientAsync();
+            _ = HandleClientAsync(client_socket);
         }
     }
 
     private async Task HandleClientAsync(TcpClient client_socket)
     {
+        var user_guid = client_connector.add_client_connector(client_socket);
+        var client = client_connector.get_client_connector(user_guid);
+        
+        if(client == null)
+        {
+            Console.WriteLine("client_socket기반 ChatClient 인스턴스가 유효하지 않음");
+            return;
+        }
+
         byte[] bytes = new byte[1024];
         int name_len = await client_socket.GetStream().ReadAsync(bytes, 0, bytes.Length);
         string user_name = Encoding.UTF8.GetString(bytes, 0, name_len);
 
-        Guid new_user_guid = Guid.NewGuid();
-        var client_grain = _grainFactory.GetGrain<IChatClientGrain>(new_user_guid);
+        var client_grain = _grainFactory.GetGrain<IChatClientGrain>(user_guid);
 
-        if (Program.user_db.StringSet(new_user_guid.ToString(), user_name))
+        if (redis_connector.write_user_info(user_guid, user_name))
         {
-            var db_guid = Program.user_db.StringGet(new_user_guid.ToString());
-            Console.WriteLine($"Redis에 기록 성공! 어서오세요 {db_guid}님");
-
-            // [TODO]: Grain에 직접 TcpClient를 넘겨주면 안됨, 다른 방법을 찾아야 함
+            Console.WriteLine($"Redis에 기록 성공! 어서오세요 {user_name}님");
             await client_grain.packet_worker();
         }
         else
@@ -50,5 +59,14 @@ class TcpChatServer
             client_socket.Close();
             Console.WriteLine("클라이언트 연결 해제됨");
         }
+    }
+
+    public void StopServer()
+    {
+        client_connector.disconnect_all_clients();
+        Console.WriteLine("모든 클라이언트 연결 종료");
+
+        redis_connector.disconnect_redis();
+        Console.WriteLine("Redis 메모리 FlushALL 처리 완료");
     }
 }

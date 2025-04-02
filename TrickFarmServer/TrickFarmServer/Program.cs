@@ -4,35 +4,37 @@ using StackExchange.Redis;
 
 public static class Program
 {
-    private static ConnectionMultiplexer redis = null!;
     private static IHost host = null!;
-    public static IDatabase user_db = null!;
+    private static TcpChatServer server = null!;
 
     public static async Task Main()
     {
         Console.CancelKeyPress += new ConsoleCancelEventHandler(OnProcessExit);
-
-        redis = ConnectionMultiplexer.Connect(new ConfigurationOptions { EndPoints = { "127.0.0.1:6379" }, AllowAdmin=true });
-        user_db = redis.GetDatabase();
-        var pong = user_db.Ping();
-        Console.WriteLine(pong);
-
         host = new HostBuilder()
             .UseOrleans(siloBuilder =>
             {
+                // 로컬에서 동작하기 위한 설정
+                siloBuilder.UseLocalhostClustering();
+                
                 // Orleans 설정들 입력
-                siloBuilder.UseLocalhostClustering(); // 로컬에서 동작하기 위한 설정
+                siloBuilder.ConfigureServices(services =>
+                {
+                    // Singleton (Orleans에서 관리)
+                    services.AddSingleton<ClientConnector>();
+                    services.AddSingleton<RedisConnector>();
+                });
             })
             .Build();
         await host.StartAsync();
 
         var grainFactory = host.Services.GetRequiredService<IGrainFactory>();
-        var server = new TcpChatServer(grainFactory, 5000);
-        await server.StartAsync();
+        server = new TcpChatServer(grainFactory, 5000);
+        await server.StartAsync(
+            host.Services.GetRequiredService<ClientConnector>(), 
+            host.Services.GetRequiredService<RedisConnector>()
+            );
 
         await host.WaitForShutdownAsync();
-        redis.GetServer("127.0.0.1", 6379).FlushAllDatabases();
-        redis.Close();
         Environment.Exit(0);
     }
 
@@ -43,11 +45,8 @@ public static class Program
         await host.WaitForShutdownAsync();
         Console.WriteLine("Orleans 종료");
 
-        var server = redis.GetServer("127.0.0.1", 6379);
-        server.FlushDatabase();
-        redis.Close();
-        Console.WriteLine("Redis 종료");
-        
+        server.StopServer();
+
         Environment.Exit(0);
     }
 }

@@ -2,21 +2,32 @@
 
 public class ChatRoomGrain : Grain, IChatRoomGrain
 {
+    private IGrainFactory grain_factory;
+    private ClientConnector client_connector = null!;
+    private RedisConnector redis_connector = null!;
+
     private readonly List<string> chat_log = new();
     private readonly ConcurrentDictionary<Guid, string> clients
         = new ConcurrentDictionary<Guid, string>();
 
     public override Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        Console.WriteLine($"[{this.GetPrimaryKey()}] 채팅룸이 생성되었습니다.");
+        Console.WriteLine($"[{this.GetPrimaryKeyString()}] 채팅룸이 생성되었습니다.");
         return Task.CompletedTask;
+    }
+
+    public ChatRoomGrain(IGrainFactory grain_factory, ClientConnector client_connector, RedisConnector redis_connector)
+    {
+        this.client_connector = client_connector;
+        this.redis_connector = redis_connector;
+        this.grain_factory = grain_factory;
     }
 
     public Task<bool> join_user(Guid user_guid, string user_name)
     {
         if (clients.TryAdd(user_guid, user_name))
         {
-            Console.WriteLine($"{user_name}님이 방에 입장하셨습니다.");
+            Console.WriteLine($"{user_name}님이 {this.GetPrimaryKeyString()} 방에 입장하셨습니다.");
             return Task.FromResult(true);
         }
         else
@@ -44,7 +55,7 @@ public class ChatRoomGrain : Grain, IChatRoomGrain
     { 
         if(clients.TryRemove(user_guid, out var value))
         {
-            Console.WriteLine($"{value}님이 방을 떠났습니다.");
+            Console.WriteLine($"{value}님이 {this.GetPrimaryKeyString()} 방을 떠났습니다.");
         }
 
         if(clients.Count() == 0)
@@ -57,7 +68,7 @@ public class ChatRoomGrain : Grain, IChatRoomGrain
 
     public override Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
     {
-        Console.WriteLine($"방 {this.GetPrimaryKey()} 이 제거되었습니다.");
+        Console.WriteLine($"채팅룸 {this.GetPrimaryKeyString()} 이 {clients.Count()}명 이므로 제거되었습니다.");
         return base.OnDeactivateAsync(reason, cancellationToken);
     }
 }
