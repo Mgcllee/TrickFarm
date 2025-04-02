@@ -54,7 +54,7 @@ class TcpChatServer
             await client_grain.packet_worker();
         }
         else
-        {
+        { 
             Console.WriteLine("Redis에 기록 실패...");
             client_socket.Close();
             Console.WriteLine("클라이언트 연결 해제됨");

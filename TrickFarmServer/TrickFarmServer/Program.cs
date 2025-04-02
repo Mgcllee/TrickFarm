@@ -23,6 +23,15 @@ public static class Program
                     services.AddSingleton<ClientConnector>();
                     services.AddSingleton<RedisConnector>();
                 });
+
+                // Orleans 대시보드 설정 ( http://localhost:8080/dashboard )
+                siloBuilder.UseDashboard(options =>
+                {
+                    options.Host = "*";  // 모든 IP에서 접근 가능
+                    options.Port = 8080; // 대시보드 포트
+                    options.BasePath = "/dashboard"; // URL 경로
+                    options.HostSelf = true; // 별도 웹 서버 없이 실행
+                });
             })
             .Build();
         await host.StartAsync();

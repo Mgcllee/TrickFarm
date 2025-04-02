@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Orleans.Server" Version="9.1.2" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <PackageReference Include="OrleansDashboard" Version="8.2.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.31" />
   </ItemGroup>
 
