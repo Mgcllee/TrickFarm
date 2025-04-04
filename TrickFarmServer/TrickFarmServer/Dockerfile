@@ -1,28 +1,22 @@
-# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
-# This stage is used when running from VS in fast mode (Default for Debug configuration)
-FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
-USER $APP_UID
-WORKDIR /app
-
-
-# This stage is used to build the service project
+# 1. 빌드 환경
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["TrickFarmServer/TrickFarmServer.csproj", "TrickFarmServer/"]
-RUN dotnet restore "./TrickFarmServer/TrickFarmServer.csproj"
-COPY . .
-WORKDIR "/src/TrickFarmServer"
-RUN dotnet build "./TrickFarmServer.csproj" -c $BUILD_CONFIGURATION -o /app/build
-
-# This stage is used to publish the service project to be copied to the final stage
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./TrickFarmServer.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
-FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+
+# 프로젝트 파일 복사 및 복원
+COPY ["TrickFarmServer/TrickFarmServer.csproj", "TrickFarmServer/"]
+WORKDIR /app/TrickFarmServer
+RUN dotnet restore
+
+# 전체 소스 코드 복사 및 빌드
+COPY . /app
+RUN dotnet publish -c Release -o /app/publish
+
+# 2. 런타임 환경
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+# 빌드된 파일 복사
+COPY --from=build /app/publish .
+
+# 실행 명령
 ENTRYPOINT ["dotnet", "TrickFarmServer.dll"]
