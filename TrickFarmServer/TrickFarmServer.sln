@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrickFarmServerDummyClient"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{81DDED9D-158B-E303-5F62-77A2896D2A5A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrickFarmWebClient", "..\TrickFarmWebClient\TrickFarmWebClient\TrickFarmWebClient.csproj", "{DA1D8088-D186-4600-86AA-F2BD175100C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrickFarmWebClient.Client", "..\TrickFarmWebClient\TrickFarmWebClient.Client\TrickFarmWebClient.Client.csproj", "{BC99662A-63E8-45CE-B9C4-D307BA7B03EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +45,22 @@ Global
 		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|x64.ActiveCfg = Release|Any CPU
 		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|x64.Build.0 = Release|Any CPU
+		{DA1D8088-D186-4600-86AA-F2BD175100C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA1D8088-D186-4600-86AA-F2BD175100C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA1D8088-D186-4600-86AA-F2BD175100C1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DA1D8088-D186-4600-86AA-F2BD175100C1}.Debug|x64.Build.0 = Debug|Any CPU
+		{DA1D8088-D186-4600-86AA-F2BD175100C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA1D8088-D186-4600-86AA-F2BD175100C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA1D8088-D186-4600-86AA-F2BD175100C1}.Release|x64.ActiveCfg = Release|Any CPU
+		{DA1D8088-D186-4600-86AA-F2BD175100C1}.Release|x64.Build.0 = Release|Any CPU
+		{BC99662A-63E8-45CE-B9C4-D307BA7B03EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC99662A-63E8-45CE-B9C4-D307BA7B03EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC99662A-63E8-45CE-B9C4-D307BA7B03EF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BC99662A-63E8-45CE-B9C4-D307BA7B03EF}.Debug|x64.Build.0 = Debug|Any CPU
+		{BC99662A-63E8-45CE-B9C4-D307BA7B03EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC99662A-63E8-45CE-B9C4-D307BA7B03EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC99662A-63E8-45CE-B9C4-D307BA7B03EF}.Release|x64.ActiveCfg = Release|Any CPU
+		{BC99662A-63E8-45CE-B9C4-D307BA7B03EF}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
