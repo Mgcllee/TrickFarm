@@ -20,8 +20,6 @@ public class ChatHub : Hub
         await tcpClient.ConnectAsync("127.0.0.1", 5000); // TrickFarmServer 주소와 포트
 
         TcpConnections[connectionId] = tcpClient;
-
-        _ = Task.Run(() => ListenToServer(tcpClient, connectionId)); // 서버로부터 수신 대기
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -37,34 +35,50 @@ public class ChatHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 
-    private async Task ListenToServer(TcpClient client, string connectionId)
+    public async Task LoginToServer(string message)
     {
-        var stream = client.GetStream();
-        var buffer = new byte[1024];
-
-        while (client.Connected)
+        var connectionId = Context.ConnectionId;
+        if (TcpConnections.TryGetValue(connectionId, out var client))
         {
-            int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            if (bytesRead == 0)
-                break;
-
-            var message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-            await Clients.Client(connectionId).SendAsync("ReceiveFromServer", message);
+            var stream = client.GetStream();
+            var buffer = Encoding.UTF8.GetBytes(message);
+            await stream.WriteAsync(buffer, 0, buffer.Length);
         }
+    }
 
-        client.Close();
-        TcpConnections.Remove(connectionId);
+    public async Task JoinToChatrrom(string request)
+    {
+        Console.WriteLine($"JoinToChatrrom: {request} ->> ");
+        var connectionId = Context.ConnectionId;
+        if (TcpConnections.TryGetValue(connectionId, out var client))
+        {
+            var stream = client.GetStream();
+            var buffer = Encoding.UTF8.GetBytes(request);
+            await stream.WriteAsync(buffer, 0, buffer.Length);
+        }
     }
 
     public async Task SendToServer(string message)
     {
         var connectionId = Context.ConnectionId;
 
+        Console.WriteLine($"서버로 보낼 내용: {message} ->> ");
         if (TcpConnections.TryGetValue(connectionId, out var client))
         {
             var stream = client.GetStream();
             var buffer = Encoding.UTF8.GetBytes(message);
             await stream.WriteAsync(buffer, 0, buffer.Length);
+
+            Console.WriteLine($"서버로 보낸 내용: {message}");
+
+            // 서버로부터 응답을 받는 부분
+            byte[] responseBuffer = new byte[1024];
+            int recv_len = await stream.ReadAsync(responseBuffer, 0, responseBuffer.Length);
+            string response = Encoding.UTF8.GetString(responseBuffer, 0, recv_len);
+
+            Console.WriteLine($"서버에서 받은 내용: {response}");
+
+            await Clients.All.SendAsync("ReceiveFromServer", response);
         }
     }
 }
