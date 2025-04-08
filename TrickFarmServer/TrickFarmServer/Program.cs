@@ -7,9 +7,6 @@ public static class Program
     private static IHost host = null!;
     private static TcpChatServer server = null!;
 
-    public static string redisHost = Environment.GetEnvironmentVariable("REDIS_HOST") ?? "localhost";
-    public static string redisPort = Environment.GetEnvironmentVariable("REDIS_PORT") ?? "6379";
-
     public static async Task Main()
     {
         Console.CancelKeyPress += new ConsoleCancelEventHandler(OnProcessExit);

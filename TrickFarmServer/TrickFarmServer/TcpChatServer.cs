@@ -38,7 +38,8 @@ class TcpChatServer
         
         if(client == null)
         {
-            Console.WriteLine("client_socket기반 ChatClient 인스턴스가 유효하지 않음");
+            client_connector.discoonect_client(user_guid);
+            Console.WriteLine("HandleClientAsync가 전달 받은 client_socket 인스턴스가 유효하지 않음");
             return;
         }
 
@@ -53,9 +54,11 @@ class TcpChatServer
             await client_grain.packet_worker();
         }
         else
-        { 
+        {
+            redis_connector.delete_user_info(user_guid);
             Console.WriteLine("Redis에 기록 실패...");
-            client_socket.Close();
+
+            client_connector.discoonect_client(user_guid);
             Console.WriteLine("클라이언트 연결 해제됨");
         }
     }

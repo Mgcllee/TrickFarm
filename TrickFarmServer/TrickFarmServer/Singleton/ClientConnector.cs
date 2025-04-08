@@ -16,6 +16,18 @@ public class ClientConnector : IClientConnector
         return clients.TryGetValue(user_guid, out var client_socket) ? client_socket : null;
     }
 
+    public void discoonect_client(Guid user_guid)
+    {
+        clients.TryRemove(user_guid, out var client_socket);
+
+        if (client_socket is not null)
+        {
+            client_socket.Dispose();
+        }
+
+        Console.WriteLine($"{user_guid.ToString()}님 연결 종료");
+    }
+
     public void disconnect_all_clients()
     {
         foreach (var client_socket in clients.Values)

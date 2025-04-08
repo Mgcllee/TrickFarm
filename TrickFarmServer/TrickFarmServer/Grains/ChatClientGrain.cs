@@ -82,10 +82,15 @@ public class ChatClientGrain : Grain, IChatClientGrain
     {
         byte[] bytes = Encoding.UTF8.GetBytes(message);
         var client_socket = client_connector.get_client_connector(user_guid);
-        if (client_socket != null)
+        if (client_socket is not null && client_socket.Connected)
         {
             var client_stream = client_socket.GetStream();
             client_stream.WriteAsync(bytes, 0, bytes.Length);
+        }
+        else if(client_socket is not null)
+        {
+            client_socket.Dispose();
+            leave_client();
         }
         return Task.CompletedTask;
     }
