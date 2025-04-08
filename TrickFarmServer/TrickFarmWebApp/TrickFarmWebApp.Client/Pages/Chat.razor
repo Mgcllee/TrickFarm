@@ -88,7 +88,6 @@
         {
             messages.Add(message);
             InvokeAsync(StateHasChanged);
-            InvokeScrollToBottom();
         });
 
         await hubConnection.StartAsync();
@@ -116,7 +115,6 @@
             else
             {
                 await hubConnection.SendAsync("SendToServer", messageInput);
-                messages.Add("메시지 전송함");
             }
 
             messageInput = "";

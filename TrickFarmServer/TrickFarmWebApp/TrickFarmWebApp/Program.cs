@@ -2,6 +2,7 @@ using TrickFarmWebApp.Client.Pages;
 using TrickFarmWebApp.Components;
 using Microsoft.AspNetCore.ResponseCompression;
 using TrickFarmWebApp.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,9 @@ builder.Services.AddResponseCompression(opts =>
 });
 
 var app = builder.Build();
+
+var hubContext = app.Services.GetRequiredService<IHubContext<ChatHub>>();
+GlobalHubContext.Initialize(hubContext);
 
 app.UseResponseCompression();
 
