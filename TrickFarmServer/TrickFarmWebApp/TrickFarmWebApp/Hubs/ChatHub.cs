@@ -20,7 +20,7 @@ public class ChatHub : Hub
         else
         {
             TcpClient tcpClient = new TcpClient();
-            await tcpClient.ConnectAsync("127.0.0.1", 5000);
+            await tcpClient.ConnectAsync("trickfarmserver", 5000);
             TcpConnections[connectionId] = tcpClient;
 
             var cts = new CancellationTokenSource();
@@ -101,6 +101,20 @@ public class ChatHub : Hub
         }
     }
 
+    public async Task LogoutToServer()
+    {
+        var connectionId = Context.ConnectionId;
+
+        if(TcpConnections.TryGetValue(connectionId, out var client))
+        {
+            var stream = client.GetStream();
+            var buffer = Encoding.UTF8.GetBytes("leave");
+            await stream.WriteAsync(buffer, 0, buffer.Length);
+            client.Dispose();
+            Console.WriteLine($"{connectionId}님이 나가셨습니다.");
+        }
+    }
+
     private async Task ReceiveLoop(string ConnectionId, TcpClient client, CancellationToken token)
     {
         if (client is null || client.GetStream() is null) return;
@@ -125,6 +139,7 @@ public class ChatHub : Hub
         }
         catch (Exception ex)
         {
+            client.Dispose();
             Console.WriteLine($"[Log][ReceiveLoop] {ex.Message}");
         }
     }

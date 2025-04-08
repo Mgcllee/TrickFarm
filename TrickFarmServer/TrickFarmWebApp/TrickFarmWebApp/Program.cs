@@ -3,6 +3,7 @@ using TrickFarmWebApp.Components;
 using Microsoft.AspNetCore.ResponseCompression;
 using TrickFarmWebApp.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,9 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddSignalR();
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo("/app/dataprotection-keys"))
+    .SetApplicationName("TrickFarmWebApp");
 
 builder.Services.AddResponseCompression(opts =>
 {

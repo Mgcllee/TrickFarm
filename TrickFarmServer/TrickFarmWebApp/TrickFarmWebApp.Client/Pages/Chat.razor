@@ -1,4 +1,4 @@
-@page "/chat"
+Ôªø@page "/chat"
 @inject IJSRuntime JS
 @rendermode InteractiveWebAssembly
 @using Microsoft.AspNetCore.SignalR.Client
@@ -16,8 +16,8 @@
     </div>
 
     <div class="chat-input-bar">
-        <input type="text" @bind="messageInput" @bind:event="oninput" @onkeydown="HandleKeyPress" placeholder="∏ﬁΩ√¡ˆ∏¶ ¿‘∑¬«œººø‰" class="chat-input" />
-        <button @onclick="Send" class="chat-send-btn">¿¸º€</button>
+        <input type="text" @bind="messageInput" @bind:event="oninput" @onkeydown="HandleKeyPress" placeholder="ÏÇ¨Ïö©ÌïòÏã§ Ïù¥Î¶ÑÏùÑ ÏûÖÎ†•Ìï¥Ï£ºÏÑ∏Ïöî." class="chat-input" />
+        <button @onclick="Send" class="chat-send-btn">Ï†ÑÏÜ°</button>
     </div>
 </div>
 
@@ -87,6 +87,7 @@
         hubConnection.On<string>("ReceiveFromServer", (message) =>
         {
             messages.Add(message);
+            InvokeScrollToBottom();
             InvokeAsync(StateHasChanged);
         });
 
@@ -107,6 +108,7 @@
             {
                 await hubConnection.SendAsync("LoginToServer", messageInput);
                 user_name = messageInput;
+                messageInput = "join + ÏûÖÏû•Ìï† Ï±ÑÌåÖÎ∞© Ïù¥Î¶Ñ";
             }
             else if(messageInput.Contains("join"))
             {
@@ -125,6 +127,7 @@
     {
         if (hubConnection is not null)
         {
+            await hubConnection.SendAsync("LogoutToServer");
             await hubConnection.DisposeAsync();
         }
     }

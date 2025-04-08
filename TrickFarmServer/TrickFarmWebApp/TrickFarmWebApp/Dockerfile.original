@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+WORKDIR /app
+
+COPY ["TrickFarmWebApp/TrickFarmWebApp/TrickFarmWebApp.csproj", "TrickFarmWebApp/TrickFarmWebApp/"]
+COPY ["TrickFarmWebApp/TrickFarmWebApp.Client/TrickFarmWebApp.Client.csproj", "TrickFarmWebApp/TrickFarmWebApp.Client/"]
+WORKDIR "/src/TrickFarmWebApp/TrickFarmWebApp"
+RUN dotnet restore
+
+COPY . /app
+RUN dotnet publish -c Release -o /app/publish
+
+# 2. 런타임 환경
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+# 빌드된 파일 복사
+COPY --from=build /app/publish .
+
+ENTRYPOINT ["dotnet", "TrickFarmWebApp.dll"]
