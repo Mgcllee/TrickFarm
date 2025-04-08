@@ -1,5 +1,9 @@
-version: '0.0.1'
+version: '3.8'
 services:
+  redis:
+    image: "redis:latest"
+    container_name: redis_server
+
   trickfarmserver:
     image: "trickfarmserver"
     build:
@@ -11,13 +15,20 @@ services:
     environment:
       - DOTNET_RUNNING_IN_CONTAINER=true
       - REDIS_CONNECTION_STRING=redis:6379
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
     depends_on:
       - redis
 
-  redis:
-    image: "redis:latest"
-    container_name: redis_server
+  trickfarmwebapp:
+    image: "trickfarmwebapp"
+    build:
+      context: .
+      dockerfile: TrickFarmWebApp/TrickFarmWebApp/Dockerfile
     ports:
-      - "6379:6379"
+      - "53502:53502"
+    environment:
+      - DOTNET_RUNNING_IN_CONTAINER=true
+      - ASPNETCORE_URLS=http://0.0.0.0:53502
+    depends_on:
+      - trickfarmserver
+    volumes:
+      - ./dataprotection:/app/dataprotection-keys
