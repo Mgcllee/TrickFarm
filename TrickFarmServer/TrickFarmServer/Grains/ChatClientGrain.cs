@@ -78,14 +78,6 @@ public class ChatClientGrain : Grain, IChatClientGrain
         return Task.CompletedTask;
     }
 
-    public Task recv_client_message(string message)
-    {
-        string formatted_message = $"[{user_chatroom_name}][{user_name}]: {message}";
-        var chatroom_grain = grain_factory.GetGrain<IChatRoomGrain>(user_chatroom_name);
-        chatroom_grain.broadcast_message(formatted_message);
-        return Task.CompletedTask;
-    }
-
     public Task send_to_client(string message)
     {
         byte[] bytes = Encoding.UTF8.GetBytes(message);
