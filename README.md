@@ -1,7 +1,7 @@
 <h1>Trick Farm</h1>
 
-![실행화면](/Document/Image/TrickFarmServer_runtime_0402.png)  
-<center>[서버, 클라이언트 콘솔 실행 화면]</center>
+![실행화면](/Document/Image/TrickFarmServer_runtime_0408.png)  
+<center>[Orleans with Dashboard, Blazor 클라이언트트 실행 화면]</center>
 
 * 서버에서 클라이언트를 관리하기 위해 **Grain** 클라이언트 당 1개씩 할당.  
 * 각 클라이언트는 채팅 방에 입장한 뒤에 채팅을 시작할 수 있으며, 채팅 방은 클라이언트처럼 **Grain** 으로 관리  
