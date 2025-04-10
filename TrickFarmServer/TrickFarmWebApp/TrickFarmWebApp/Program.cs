@@ -9,10 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    serverOptions.ListenAnyIP(443, listenOptions =>
-    {
-        listenOptions.UseHttps("/https/cert.pfx", "mgcllee"); // 비밀번호는 pfx 만들 때 사용한 값으로 변경
-    });
+    serverOptions.ListenAnyIP(8081); // HTTP만 열어둠
 });
 
 // Add services to the container.

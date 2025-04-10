@@ -2,7 +2,7 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 
 USER root
-RUN mkdir -p /https /dataprotection && \
+RUN mkdir -p /dataprotection && \
     apt-get update && \
     apt-get install -y locales fonts-nanum fontconfig && \
     locale-gen ko_KR.UTF-8
@@ -17,7 +17,7 @@ USER $APP_UID
 
 WORKDIR /app
 
-EXPOSE 443
+EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
@@ -36,11 +36,8 @@ RUN dotnet publish "./TrickFarmWebApp.csproj" -c $BUILD_CONFIGURATION -o /app/pu
 FROM base AS final
 WORKDIR /app
 
-COPY cert.pfx /https/cert.pfx
 COPY --from=publish /app/publish .
 
-ENV ASPNETCORE_URLS=https://0.0.0.0:443 \
-    ASPNETCORE_Kestrel__Certificates__Default__Path=/https/cert.pfx \
-    ASPNETCORE_Kestrel__Certificates__Default__Password=mgcllee
+ENV ASPNETCORE_URLS=http://0.0.0.0:8081
 
 ENTRYPOINT ["dotnet", "TrickFarmWebApp.dll"]
