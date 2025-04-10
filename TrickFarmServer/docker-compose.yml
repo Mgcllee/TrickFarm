@@ -27,7 +27,7 @@ services:
       - "53502:53502"
     environment:
       - DOTNET_RUNNING_IN_CONTAINER=true
-      - ASPNETCORE_URLS=http://0.0.0.0:53502
+      - ASPNETCORE_URLS=https://+:443
     depends_on:
       - trickfarmserver
     volumes:

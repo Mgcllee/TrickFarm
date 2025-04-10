@@ -20,7 +20,7 @@ public class ChatHub : Hub
         else
         {
             TcpClient tcpClient = new TcpClient();
-            await tcpClient.ConnectAsync("trickfarmserver", 5000);
+            await tcpClient.ConnectAsync("trickfarm-orleans.koreacentral.cloudapp.azure.com", 5000);
             TcpConnections[connectionId] = tcpClient;
 
             var cts = new CancellationTokenSource();
