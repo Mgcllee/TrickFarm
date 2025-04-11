@@ -81,7 +81,8 @@
     protected override async Task OnInitializedAsync()
     {
         hubConnection = new HubConnectionBuilder()
-            .WithUrl("http://trickfarmweb.koreacentral.cloudapp.azure.com:8081/chathub")
+            // .WithUrl("http://trickfarmweb.koreacentral.cloudapp.azure.com:8081/chathub")
+            .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
             .WithAutomaticReconnect()
             .Build();
 
@@ -93,7 +94,7 @@
         });
 
         await hubConnection.StartAsync();
-        await hubConnection.SendAsync("ConnectToTrickFarm");
+        // await hubConnection.SendAsync("ConnectToTrickFarm");
     }
 
     private async Task Send()
