@@ -10,7 +10,7 @@ class Client
     static async Task Main(string[] args)
     {
         // 서버의 IP 주소와 포트 번호
-        string serverIp = "127.0.0.1"; // 로컬호스트
+        string serverIp = "trickfarm-orleans.koreacentral.cloudapp.azure.com"; // 로컬호스트
         int port = 5000;
 
         _client = new TcpClient();
