@@ -10,9 +10,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="dataprotection-keys\**" />
+    <Content Remove="dataprotection-keys\**" />
+    <EmbeddedResource Remove="dataprotection-keys\**" />
+    <None Remove="dataprotection-keys\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TrickFarmWebApp.Client\TrickFarmWebApp.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.6" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
   </ItemGroup>
-
+  
 </Project>

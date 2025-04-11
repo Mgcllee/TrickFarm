@@ -7,11 +7,6 @@ using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(serverOptions =>
-{
-    serverOptions.ListenAnyIP(8081); // HTTP¸¸ ¿­¾îµÒ
-});
-
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
@@ -19,13 +14,16 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSignalR();
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo("/app/dataprotection-keys"))
-    .SetApplicationName("TrickFarmWebApp");
+    .SetApplicationName("TrickFarmWebApp")
+    .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
 builder.Services.AddResponseCompression(opts =>
 {
     opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
         ["application/octet-stream"]);
 });
+
+builder.WebHost.UseUrls("http://*:8081");
 
 var app = builder.Build();
 
@@ -44,7 +42,7 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();

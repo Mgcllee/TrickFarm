@@ -81,7 +81,8 @@
     protected override async Task OnInitializedAsync()
     {
         hubConnection = new HubConnectionBuilder()
-            .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+            .WithUrl("http://trickfarmweb.koreacentral.cloudapp.azure.com:8081/chathub")
+            .WithAutomaticReconnect()
             .Build();
 
         hubConnection.On<string>("ReceiveFromServer", (message) =>
