@@ -77,12 +77,12 @@
     private string? user_name;
     private string? messageInput; 
     public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
+    private bool enter_chatroom = false;
 
     protected override async Task OnInitializedAsync()
     {
         hubConnection = new HubConnectionBuilder()
             .WithUrl("http://trickfarmweb.koreacentral.cloudapp.azure.com:8081/chathub")
-            .WithAutomaticReconnect()
             .Build();
 
         hubConnection.On<string>("ReceiveFromServer", (message) =>
@@ -92,8 +92,15 @@
             InvokeAsync(StateHasChanged);
         });
 
-        await hubConnection.StartAsync();
-        await hubConnection.SendAsync("ConnectToTrickFarm");
+        try
+        {
+            await hubConnection.StartAsync();
+            await hubConnection.SendAsync("ConnectToTrickFarm");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] SignalR 연결 실패: {ex.Message}");
+        }
     }
 
     private async Task Send()
@@ -111,16 +118,21 @@
                 user_name = messageInput;
                 messageInput = "join + 입장할 채팅방 이름";
             }
-            else if(messageInput.Contains("join"))
+            else if (messageInput.Contains("join") && enter_chatroom is false)
             {
                 await hubConnection.SendAsync("JoinToChatrrom", messageInput);
+                enter_chatroom = true;
             }
-            else
+            else if (enter_chatroom)
             {
                 await hubConnection.SendAsync("SendToServer", messageInput);
             }
 
             messageInput = "";
+        } 
+        else
+        {
+            messageInput = $"hubConnection is {hubConnection is null} and IsConnected is {IsConnected}";
         }
     }
 
