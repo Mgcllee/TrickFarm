@@ -47,7 +47,7 @@ class TcpChatServer
         int name_len = await client_socket.GetStream().ReadAsync(bytes, 0, bytes.Length);
         string user_name = Encoding.UTF8.GetString(bytes, 0, name_len);
 
-        if (name_len > 0 && redis_connector.write_user_info(user_guid, user_name))
+        if (name_len > 0 && user_name is not "leave" && redis_connector.write_user_info(user_guid, user_name))
         {
             var client_grain = _grainFactory.GetGrain<IChatClientGrain>(user_guid);
             Console.WriteLine($"Redis에 기록 성공! 어서오세요 {user_name}님");
