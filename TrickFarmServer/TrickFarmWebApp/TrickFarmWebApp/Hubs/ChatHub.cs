@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace TrickFarmWebApp.Hubs;
@@ -19,19 +20,31 @@ public class ChatHub : Hub
         }
         else
         {
-            TcpClient tcpClient = new TcpClient();
-            await tcpClient.ConnectAsync("trickfarm-orleans.koreacentral.cloudapp.azure.com", 5000);
-            TcpConnections[connectionId] = tcpClient;
-
-            var cts = new CancellationTokenSource();
-            var state = new ConnectionState
+            try
             {
-                TcpClient = tcpClient,
-                CancellationTokenSource = cts
-            };
+                TcpClient tcpClient = new TcpClient();
+                await tcpClient.ConnectAsync("trickfarm-orleans.koreacentral.cloudapp.azure.com", 5000);
+                TcpConnections[connectionId] = tcpClient;
 
-            state.ReceiveTask = Task.Run(() => ReceiveLoop(connectionId, tcpClient, cts.Token));
-            Connections[connectionId] = state;
+                var cts = new CancellationTokenSource();
+                var state = new ConnectionState
+                {
+                    TcpClient = tcpClient,
+                    CancellationTokenSource = cts
+                };
+
+                state.ReceiveTask = Task.Run(() => ReceiveLoop(connectionId, tcpClient, cts.Token));
+                Connections[connectionId] = state;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("TrickFarmWebApp에서 ConnectToTrickFarm 메서드 속 TcpClient 접속 실패");
+                Console.WriteLine($"오류 발생: {ex.Message}");
+            }
+            finally
+            {
+                Console.WriteLine("TrickFarmWebApp에서 ConnectToTrickFarm 메서드 종료");
+            }
         }
     }
 
