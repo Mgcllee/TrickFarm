@@ -86,8 +86,10 @@ public class ChatClientGrain : Grain, IChatClientGrain
         {
             var client_stream = client_socket.GetStream();
             client_stream.WriteAsync(bytes, 0, bytes.Length);
+
+            Console.WriteLine("ClientGrain::send_to_client - " + message);
         }
-        else if(client_socket is not null)
+        else
         {
             client_socket.Dispose();
             leave_client();

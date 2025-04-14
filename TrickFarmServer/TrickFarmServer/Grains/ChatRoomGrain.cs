@@ -55,7 +55,16 @@ public class ChatRoomGrain : Grain, IChatRoomGrain
     { 
         if(clients.TryRemove(user_guid, out var value))
         {
-            Console.WriteLine($"{value}님이 {this.GetPrimaryKeyString()} 방을 떠났습니다.");
+            string message = $"{value}님이 {this.GetPrimaryKeyString()} 방을 떠났습니다.";
+            Console.WriteLine(message);
+            foreach (var client in clients)
+            {
+                if (client.Key != user_guid)
+                {
+                    var client_grain = GrainFactory.GetGrain<IChatClientGrain>(client.Key);
+                    client_grain.send_to_client(message);
+                }
+            }
         }
 
         if(clients.Count() == 0)

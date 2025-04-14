@@ -82,7 +82,8 @@
     protected override async Task OnInitializedAsync()
     {
         hubConnection = new HubConnectionBuilder()
-            .WithUrl("http://trickfarmweb.koreacentral.cloudapp.azure.com:8081/chathub")
+            .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+            .WithAutomaticReconnect()
             .Build();
 
         hubConnection.On<string>("ReceiveFromServer", (message) =>
@@ -99,7 +100,8 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] SignalR 연결 실패: {ex.Message}");
+            HubConnectionState st = hubConnection.State;
+            Console.WriteLine($"[ERROR] SignalR 연결 실패: {ex.Message} ({st.ToString()})");
         }
     }
 
