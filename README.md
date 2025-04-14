@@ -32,4 +32,4 @@
 
 ![유저접속과정](/Document/Image/TrickFarm_개발순서도.png)
 
-* GitHub Action을 이용한 자동화 이용.
+* (추가 예정) GitHub Action을 이용한 자동화 이용.
