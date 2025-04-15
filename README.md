@@ -19,16 +19,16 @@
 
 <center>[TrickFarm 구현도]</center>
 
-|VM 이름|역할|크기|
-|---|---|---|
-|TrickFarmServer|Client 객체 관리 및 Redis 정보 관리| 2vCPU, 1GiB 메모리|
-|TrickFarmWebApp|Web 요청 처리 및 TrickFarmServer 연결| 2vCPU, 1GiB 메모리|
+|VM 이름|역할|크기|OS|
+|---|---|---|---|
+|TrickFarmServer|Client 객체 관리 및 Redis 정보 관리| 2vCPU, 1GiB 메모리|Ubuntu server 22.04 LTS|
+|TrickFarmWebApp|Web 요청 처리 및 TrickFarmServer 연결| 2vCPU, 1GiB 메모리|Ubuntu server 22.04 LTS|
 
 * Azure virtual network, Azure Container Registry, Azure Public IP 활용.  
 
 <br/>
 
-# Trick Farm 개발 과정
+# (예정) Trick Farm 개발 과정
 
 ![유저접속과정](/Document/Image/TrickFarm_개발순서도.png)
 
