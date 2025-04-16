@@ -35,6 +35,7 @@ jobs:
 
       - name: Check if commit contains [update]
         id: check
+        shell: bash
         run: |
           message="$(git log -1 --pretty=%B)"
           if [[ "$message" =~ \[update\] ]]; then
@@ -43,6 +44,7 @@ jobs:
             echo "run=true" >> $GITHUB_OUTPUT
           else
             echo "run=false" >> $GITHUB_OUTPUT
+          fi
 
   build-and-deploy:
     needs: check-commit
