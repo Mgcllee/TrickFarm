@@ -69,7 +69,7 @@ jobs:
         run: |
           docker build -f TrickFarmServer/TrickFarmServer/Dockerfile -t mgcllee.azurecr.io/trickfarmserver:$VERSION TrickFarmServer/TrickFarmServer
           docker push mgcllee.azurecr.io/trickfarmserver:$VERSION
-
+          
       - name: Notify Slack of success
         if: success()
         uses: slackapi/slack-github-action@v1.24.0
@@ -77,8 +77,16 @@ jobs:
           payload: |
             {
               "channel": "server_error",
-              "text": "TrickFarm ${{ env.VERSION }} 버전 배포 성공"
+              "text": "ACR에 TrickFarm ${{ env.VERSION }} 버전 배포 성공"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           VERSION: ${{ needs.check-commit.outputs.version_tag }}
+      
+      - name: Deploy to WebApp VM
+        run: |
+          ssh mgcllee@${{ secrets.VM_WEB_PUBLICIP }} \
+            "docker stop trickfarmwebapp || true && \
+             docker rm trickfarmwebapp || true && \
+             docker run -d --name trickfarmwebapp -p 8081:8081 mgcllee.azurecr.io/trickfarmwebapp:$VERSION"
+        continue-on-error: true
