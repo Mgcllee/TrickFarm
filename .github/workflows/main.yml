@@ -70,7 +70,7 @@ jobs:
 
       - name: Build and push Server image
         run: |
-          docker build -t mgcllee.azurecr.io/trickfarmserver:$VERSION ./TrickFarmServer/TrickFarmServer
+          docker build -f TrickFarmServer/TrickFarmServer/Dockerfile -t mgcllee.azurecr.io/trickfarmserver:$VERSION .
           docker push mgcllee.azurecr.io/trickfarmserver:$VERSION
 
       - name: Notify Slack of success
