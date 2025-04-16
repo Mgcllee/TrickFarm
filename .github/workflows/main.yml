@@ -103,4 +103,19 @@ jobs:
           script: |
             docker stop trickfarmwebapp || true
             docker rm trickfarmwebapp || true
-            docker run -d --name trickfarmwebapp -p 8081:8081 ${{ secrets.ACR_REGISTRY }}/trickfarmwebapp:${{ github.event.inputs.version || github.ref_name }}
+            docker run -d --name trickfarmwebapp -p 8081:8081 ${{ secrets.ACR_REGISTRY }}/trickfarmwebapp:${{ env.VERSION }}
+        env:
+          VERSION: ${{ needs.check-commit.outputs.version_tag }}
+    
+      - name: Notify Slack of success
+        if: success()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "channel": "server_error",
+              "text": "VM에 TrickFarm Web Server ${{ env.VERSION }} 버전 실행 성공"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          VERSION: ${{ needs.check-commit.outputs.version_tag }}
