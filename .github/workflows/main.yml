@@ -103,7 +103,7 @@ jobs:
           script: |
             docker stop trickfarmwebapp || true
             docker rm trickfarmwebapp || true
-            docker run -d --name trickfarmwebapp -p 8081:8081 ${{ env.ACR_REGISTRY }}/trickfarmwebapp:${{ env.VERSION }}
+            docker run -d -p 8081:8081 -v /home/leemc9902/dataprotection-keys:/app/dataprotection-keys --name trickfarmwebapp ${{ env.ACR_REGISTRY }}/trickfarmwebapp:${{ env.VERSION }}
         env:
           ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
           VERSION: ${{ needs.check-commit.outputs.version_tag }}
