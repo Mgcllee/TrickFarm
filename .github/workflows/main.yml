@@ -65,7 +65,7 @@ jobs:
 
       - name: Build and push WebApp image
         run: |
-          docker build -t mgcllee.azurecr.io/trickfarmwebapp:$VERSION ./TrickFarmServer/TrickFarmWebApp/TrickFarmWebApp
+          docker build -t mgcllee.azurecr.io/trickfarmwebapp:$VERSION ./TrickFarmServer/TrickFarmWebApp
           docker push mgcllee.azurecr.io/trickfarmwebapp:$VERSION
 
       - name: Build and push Server image
