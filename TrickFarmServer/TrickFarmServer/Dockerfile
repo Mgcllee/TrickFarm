@@ -10,7 +10,7 @@ WORKDIR /src
 RUN dotnet build TrickFarmServer.csproj -c Release -o /app/build
 RUN dotnet publish TrickFarmServer.csproj -c Release -o /app/publish
 
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "TrickFarmServer.dll"]
