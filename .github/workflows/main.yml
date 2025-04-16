@@ -80,9 +80,10 @@ jobs:
               "attachments": [
                 {
                   "color": "good",
-                  "text": "TrickFarm ${VERSION} 버전 배포 성공"
+                  "text": "TrickFarm ${{ env.VERSION }} 버전 배포 성공"
                 }
               ]
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          VERSION: ${{ needs.check-commit.outputs.version_tag }}
