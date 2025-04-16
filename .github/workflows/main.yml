@@ -65,12 +65,12 @@ jobs:
 
       - name: Build and push WebApp image
         run: |
-          docker build -t mgcllee.azurecr.io/trickfarmwebapp:$VERSION ./TrickFarmWebApp
+          docker build -t mgcllee.azurecr.io/trickfarmwebapp:$VERSION ./TrickFarmServer/TrickFarmWebApp/TrickFarmWebApp
           docker push mgcllee.azurecr.io/trickfarmwebapp:$VERSION
 
       - name: Build and push Server image
         run: |
-          docker build -t mgcllee.azurecr.io/trickfarmserver:$VERSION ./TrickFarmServer
+          docker build -t mgcllee.azurecr.io/trickfarmserver:$VERSION ./TrickFarmServer/TrickFarmServer
           docker push mgcllee.azurecr.io/trickfarmserver:$VERSION
 
       - name: Notify Slack of success
