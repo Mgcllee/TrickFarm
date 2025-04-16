@@ -29,7 +29,7 @@ COPY ["TrickFarmWebApp.Client/TrickFarmWebApp.Client.csproj", "TrickFarmWebApp/T
 RUN dotnet restore "./TrickFarmWebApp/TrickFarmWebApp.csproj"
 COPY . .
 WORKDIR "/src/TrickFarmWebApp"
-RUN dotnet build "TrickFarmWebApp.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./TrickFarmWebApp.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
