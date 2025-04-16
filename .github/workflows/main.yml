@@ -20,6 +20,7 @@ jobs:
 
       - name: Extract version from commit message
         id: extract
+        shell: bash
         run: |
           message="$(git log -1 --pretty=%B)"
           echo "Commit message: $message"
@@ -30,6 +31,7 @@ jobs:
           else
             echo "No version found"
             echo "version=none" >> $GITHUB_OUTPUT
+          fi
 
       - name: Check if commit contains [update]
         id: check
@@ -84,4 +86,4 @@ jobs:
               ]
             }
         env:
-          SLACK_WEBHOOK_URL: secrets.SLACK_WEBHOOK_URL
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
