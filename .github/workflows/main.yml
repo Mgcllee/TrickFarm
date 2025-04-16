@@ -80,7 +80,8 @@ jobs:
               "attachments": [
                 {
                   "color": "good",
-                  "text": "TrickFarm ${{ env.VERSION }} 버전 배포 성공"
+                  "text": "TrickFarm ${{ env.VERSION }} 버전 배포 성공",
+                  "fallback": "TrickFarm ${{ env.VERSION }} 버전 배포 성공"
                 }
               ]
             }
