@@ -24,12 +24,12 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["TrickFarmWebApp/TrickFarmWebApp.csproj", "TrickFarmWebApp/TrickFarmWebApp/"]
+COPY ["TrickFarmWebApp/TrickFarmWebApp.csproj", "TrickFarmWebApp/"]
 COPY ["TrickFarmWebApp.Client/TrickFarmWebApp.Client.csproj", "TrickFarmWebApp/TrickFarmWebApp.Client/"]
-RUN dotnet restore "./TrickFarmWebApp/TrickFarmWebApp/TrickFarmWebApp.csproj"
+RUN dotnet restore "./TrickFarmWebApp/TrickFarmWebApp.csproj"
 COPY . .
-WORKDIR "/src/TrickFarmWebApp/TrickFarmWebApp"
-RUN dotnet build "./TrickFarmWebApp.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/TrickFarmWebApp"
+RUN dotnet build "TrickFarmWebApp.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
