@@ -83,10 +83,19 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           VERSION: ${{ needs.check-commit.outputs.version_tag }}
       
+      - name: Set up SSH private key
+        run: |
+            mkdir -p ~/.ssh
+            echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+            
+      - name: Add VM to known_hosts
+        run: |
+            ssh-keyscan -H ${{ secrets.VM_WEB_PUBLICIP }} >> ~/.ssh/known_hosts
+            
       - name: Deploy to WebApp VM
         run: |
-          ssh mgcllee@${{ secrets.VM_WEB_PUBLICIP }} \
+            ssh mgcllee@${{ secrets.VM_WEB_PUBLICIP }} \
             "docker stop trickfarmwebapp || true && \
-             docker rm trickfarmwebapp || true && \
-             docker run -d --name trickfarmwebapp -p 8081:8081 mgcllee.azurecr.io/trickfarmwebapp:$VERSION"
-        continue-on-error: true
+            docker rm trickfarmwebapp || true && \
+            docker run -d --name trickfarmwebapp -p 8081:8081 mgcllee.azurecr.io/trickfarmwebapp:$VERSION"
