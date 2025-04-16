@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-    # Ä¿¹Ô ¸Ş½ÃÁö¿¡ [1.0.0] °°Àº ¹öÀü Á¤º¸°¡ ÀÖ¾î¾ß ½ÇÇàµÇ¸ç, [update]°¡ ÀÖÀ¸¸é ½ÇÇà ¾È ÇÔ
+    # ì»¤ë°‹ ë©”ì‹œì§€ì— [1.0.0] ê°™ì€ ë²„ì „ ì •ë³´ê°€ ìˆì–´ì•¼ ì‹¤í–‰ë˜ë©°, [update]ê°€ ìˆìœ¼ë©´ ì‹¤í–‰ ì•ˆ í•¨
     paths-ignore:
       - '**/*.md'
 
@@ -77,7 +77,7 @@ jobs:
           payload: |
             {
               "channel": "server_error",
-              "text": "ACR¿¡ TrickFarm ${{ env.VERSION }} ¹öÀü ¹èÆ÷ ¼º°ø"
+              "text": "ACRì— TrickFarm ${{ env.VERSION }} ë²„ì „ ë°°í¬ ì„±ê³µ"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -104,7 +104,7 @@ jobs:
             az acr login --name ${{ env.ACR_REGISTRY }}
             docker stop trickfarmwebapp || true
             docker rm trickfarmwebapp || true
-            docker run -d -p 8081:8081 -v /home/leemc9902/dataprotection-keys:/app/dataprotection-keys --name trickfarmwebapp ${{ env.ACR_REGISTRY }}/trickfarmwebapp:${{ env.VERSION }}
+            docker run -d -p 8081:8081 -v /home/leemc9902/dataprotection-keys:/src/dataprotection-keys --name trickfarmwebapp ${{ env.ACR_REGISTRY }}/trickfarmwebapp:${{ env.VERSION }}
         env:
           ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
           VERSION: ${{ needs.check-commit.outputs.version_tag }}
@@ -116,7 +116,7 @@ jobs:
           payload: |
             {
               "channel": "server_error",
-              "text": "VM¿¡ TrickFarm Web Server ${{ env.VERSION }} ¹öÀü ½ÇÇà ¼º°ø"
+              "text": "VMì— TrickFarm Web Server ${{ env.VERSION }} ë²„ì „ ì‹¤í–‰ ì„±ê³µ"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
