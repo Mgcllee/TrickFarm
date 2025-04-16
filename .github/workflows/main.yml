@@ -101,6 +101,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY_VM_WEB_SERVER }}
           port: 22
           script: |
+            az acr login --name ${{ env.ACR_REGISTRY }}
             docker stop trickfarmwebapp || true
             docker rm trickfarmwebapp || true
             docker run -d -p 8081:8081 -v /home/leemc9902/dataprotection-keys:/app/dataprotection-keys --name trickfarmwebapp ${{ env.ACR_REGISTRY }}/trickfarmwebapp:${{ env.VERSION }}
