@@ -75,7 +75,7 @@ jobs:
         with:
           payload: |
             {
-              "channel": "Æ®¸¯ÆÊ¾Ë¸²",
+              "channel": "server_error",
               "attachments": [
                 {
                   "color": "good",
@@ -84,4 +84,4 @@ jobs:
               ]
             }
         env:
-          SLACK_WEBHOOK_URL: https://hooks.slack.com/services/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
+          SLACK_WEBHOOK_URL: https://hooks.slack.com/services/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
