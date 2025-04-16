@@ -69,24 +69,6 @@ jobs:
           docker build -t mgcllee.azurecr.io/trickfarmserver:$VERSION ./TrickFarmServer
           docker push mgcllee.azurecr.io/trickfarmserver:$VERSION
 
-      - name: Deploy to WebApp VM
-        run: |
-          ssh mgcllee@[공용주소작성] \
-            "docker stop trickfarmwebapp || true && \
-             docker rm trickfarmwebapp || true && \
-             docker run -d --name trickfarmwebapp -p 8081:8081 mgcllee.azurecr.io/trickfarmwebapp:$VERSION"
-        continue-on-error: true
-
-      - name: Deploy to Server VM
-        run: |
-          ssh mgcllee@[공용주소작성] \
-            "docker stop trickfarmserver || true && \
-             docker rm trickfarmserver || true && \
-             docker network create trickfarmnet || true && \
-             docker run -d --name redis --network trickfarmnet redis && \
-             docker run -d --name trickfarmserver --network trickfarmnet -p 8080:8080 -p 5000:5000 mgcllee.azurecr.io/trickfarmserver:$VERSION"
-        continue-on-error: true
-
       - name: Notify Slack of success
         if: success()
         uses: slackapi/slack-github-action@v1.24.0
@@ -102,24 +84,4 @@ jobs:
               ]
             }
         env:
-          SLACK_WEBHOOK_URL: https://hooks.slack.com/services/트릭팜
-
-      - name: Rollback and notify Slack on failure
-        if: failure()
-        run: |
-          echo "Deploy failed. Rolling back..."
-          ssh mgcllee@[공용주소작성] "
-            docker rm -f trickfarmwebapp || true && \
-            docker run -d --name trickfarmwebapp -p 8081:8081 mgcllee.azurecr.io/trickfarmwebapp:previous"
-
-          ssh mgcllee@[공용주소작성] "
-            docker rm -f trickfarmserver || true && \
-            docker run -d --name trickfarmserver --network trickfarmnet -p 8080:8080 -p 5000:5000 mgcllee.azurecr.io/trickfarmserver:previous"
-
-          curl -X POST -H 'Content-type: application/json' --data '{
-            "channel": "트릭팜알림",
-            "attachments": [{
-              "color": "danger",
-              "text": "TrickFarm ${VERSION} 배포 실패 및 롤백 완료"
-            }]
-          }' https://hooks.slack.com/services/트릭팜
+          SLACK_WEBHOOK_URL: https://hooks.slack.com/services/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
