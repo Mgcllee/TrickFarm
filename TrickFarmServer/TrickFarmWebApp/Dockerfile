@@ -25,7 +25,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["TrickFarmWebApp/TrickFarmWebApp.csproj", "TrickFarmWebApp/"]
-COPY ["TrickFarmWebApp.Client/TrickFarmWebApp.Client.csproj", "TrickFarmWebApp/TrickFarmWebApp.Client/"]
+COPY ["TrickFarmWebApp.Client/TrickFarmWebApp.Client.csproj", "TrickFarmWebApp.Client/"]
 RUN dotnet restore "./TrickFarmWebApp/TrickFarmWebApp.csproj"
 COPY . .
 WORKDIR "/src/TrickFarmWebApp"
