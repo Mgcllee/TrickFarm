@@ -57,18 +57,18 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Log in to Azure Container Registry
-        run: echo "${{ secrets.ACR_PASSWORD }}" | docker login mgcllee.azurecr.io -u ${{ secrets.ACR_USERNAME }} --password-stdin
+        run: echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
 
       - name: Build and push WebApp image
         run: |
-          docker build -t mgcllee.azurecr.io/trickfarmwebapp:$VERSION ./TrickFarmServer/TrickFarmWebApp
-          docker push mgcllee.azurecr.io/trickfarmwebapp:$VERSION
+          docker build -t ${{ secrets.ACR_REGISTRY }}/trickfarmwebapp:$VERSION ./TrickFarmServer/TrickFarmWebApp
+          docker push ${{ secrets.ACR_REGISTRY }}/trickfarmwebapp:$VERSION
 
       - name: Build and push Server image
         run: |
-          docker build -f TrickFarmServer/TrickFarmServer/Dockerfile -t mgcllee.azurecr.io/trickfarmserver:$VERSION TrickFarmServer/TrickFarmServer
-          docker push mgcllee.azurecr.io/trickfarmserver:$VERSION
+          docker build -f TrickFarmServer/TrickFarmServer/Dockerfile -t ${{ secrets.ACR_REGISTRY }}/trickfarmserver:$VERSION TrickFarmServer/TrickFarmServer
+          docker push ${{ secrets.ACR_REGISTRY }}/trickfarmserver:$VERSION
           
       - name: Notify Slack of success
         if: success()
@@ -93,9 +93,14 @@ jobs:
         run: |
             ssh-keyscan -H ${{ secrets.VM_WEB_PUBLICIP }} >> ~/.ssh/known_hosts
             
-      - name: Deploy to WebApp VM
-        run: |
-            ssh mgcllee@${{ secrets.VM_WEB_PUBLICIP }} \
-            "docker stop trickfarmwebapp || true && \
-            docker rm trickfarmwebapp || true && \
-            docker run -d --name trickfarmwebapp -p 8081:8081 mgcllee.azurecr.io/trickfarmwebapp:$VERSION"
+      - name: SSH to Azure VM and run commands
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VM_WEB_PUBLICIP }}
+          username: ${{ secrets.VM_WEB_VM_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY_VM_WEB_SERVER }}
+          port: 22
+          script: |
+            docker stop trickfarmwebapp || true
+            docker rm trickfarmwebapp || true
+            docker run -d --name trickfarmwebapp -p 8081:8081 ${{ secrets.ACR_REGISTRY }}/trickfarmwebapp:${{ github.event.inputs.version || github.ref_name }}
