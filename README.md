@@ -1,9 +1,9 @@
 # Trick Farm
----
 
 ![실행화면](/Document/Image/TrickFarmServer_runtime_0414.png)  
+[Orleans with Dashboard, Azure VM(Ubuntu), Blazor 클라이언트트 실행 화면]
 
-<center>[Orleans with Dashboard, Azure VM(Ubuntu), Blazor 클라이언트트 실행 화면]</center>
+[개발 계획표](https://github.com/users/Mgcllee/projects/4)
 
 * 서버에서 클라이언트를 관리하기 위해 **Grain** 클라이언트 당 1개씩 할당.  
 * 각 클라이언트는 채팅 방에 입장한 뒤에 채팅을 시작할 수 있으며, 채팅 방은 클라이언트처럼 **Grain** 으로 관리  
