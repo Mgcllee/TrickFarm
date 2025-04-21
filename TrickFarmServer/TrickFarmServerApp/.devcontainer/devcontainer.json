@@ -1,18 +1,23 @@
 {
-    "name": "Ubuntu Dev Container with C++, .NET 8, Redis",
-    "build": {
-      "dockerfile": "Dockerfile"
-    },
-    "settings": {
-      "terminal.integrated.defaultProfile.linux": "bash"
-    },
-    "extensions": [
-      "ms-vscode.cpptools",
-      "ms-dotnettools.csharp",
-      "ms-azuretools.vscode-docker"
-    ],
-    "forwardPorts": [5000, 6379],
-    "postCreateCommand": "dotnet --version && g++ --version && redis-server --version",
-    "remoteUser": "vscode"
-  }
-  
+  "name": "Ubuntu Dev Container with C++, .NET 8, Redis",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "settings": {
+    "terminal.integrated.defaultProfile.linux": "bash"
+  },
+  "extensions": [
+    "ms-vscode.cpptools",
+    "ms-dotnettools.csharp",
+    "ms-azuretools.vscode-docker"
+  ],
+  "forwardPorts": [
+    5000,     // ASP.NET 또는 Orleans 클라이언트 포트
+    8080,     // Orelans Dashboard 포트
+    6379,     // Redis 포트
+    11111,    // Orleans Silo 통신 포트
+    30000     // Orleans 게이트웨이 포트
+  ],
+  "postCreateCommand": "sudo service redis-server start && dotnet restore /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmOrleansServer/TrickFarmOrleansServer.csproj",
+  "remoteUser": "vscode"
+}

@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrickFarmServer", "TrickFarmOrleansServer\TrickFarmServer.csproj", "{3AB19C54-90DC-512E-02BE-466BCF5B6F2E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrickFarmOrleansServer", "TrickFarmOrleansServer\TrickFarmOrleansServer.csproj", "{3AB19C54-90DC-512E-02BE-466BCF5B6F2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
