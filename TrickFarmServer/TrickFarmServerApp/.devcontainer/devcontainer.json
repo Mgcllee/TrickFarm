@@ -1,0 +1,18 @@
+{
+    "name": "Ubuntu Dev Container with C++, .NET 8, Redis",
+    "build": {
+      "dockerfile": "Dockerfile"
+    },
+    "settings": {
+      "terminal.integrated.defaultProfile.linux": "bash"
+    },
+    "extensions": [
+      "ms-vscode.cpptools",
+      "ms-dotnettools.csharp",
+      "ms-azuretools.vscode-docker"
+    ],
+    "forwardPorts": [5000, 6379],
+    "postCreateCommand": "dotnet --version && g++ --version && redis-server --version",
+    "remoteUser": "vscode"
+  }
+  
