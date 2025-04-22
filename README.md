@@ -30,6 +30,6 @@
 
 # (예정) Trick Farm 개발 과정
 
-![유저접속과정](/Document/Image/TrickFarm_개발순서도.png)
+![유저접속과정](/Document/Image/TrickFarm_개발순서도_02.png)
 
 * (추가 예정) GitHub Action을 이용한 자동화 이용.
