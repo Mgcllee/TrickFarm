@@ -15,7 +15,7 @@
 
 # Trick Farm 구조도
 
-![구조도](/Document/Image/TrickFarm_구현도.png)
+![구조도](/Document/Image/TrickFarm_구현도_03.png)
 
 <center>[TrickFarm 구현도]</center>
 
@@ -30,6 +30,6 @@
 
 # (예정) Trick Farm 개발 과정
 
-![유저접속과정](/Document/Image/TrickFarm_개발순서도_02.png)
+![유저접속과정](/Document/Image/TrickFarm_개발순서도_03.png)
 
 * (추가 예정) GitHub Action을 이용한 자동화 이용.
