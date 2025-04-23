@@ -17,7 +17,15 @@
 
 ![구조도](/Document/Image/TrickFarm_구현도_03.png)
 
-<center>[TrickFarm 구현도]</center>
+[TrickFarm 실행 구조]
+
+<br/>
+
+![슬랙알림](/Document/Image/NotifySlack.png){: width="550", height="550"}
+
+[Git Commit, GitHub Action 결과를 Slack으로 받은 결과]
+
+<br/>
 
 |VM 이름|역할|크기|OS|
 |---|---|---|---|
