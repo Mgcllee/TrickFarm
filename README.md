@@ -21,7 +21,7 @@
 
 <br/>
 
-![슬랙알림](/Document/Image/NotifySlack.png){: width="550", height="550"}
+![슬랙알림](/Document/Image/NotifySlack.png)
 
 [Git Commit, GitHub Action 결과를 Slack으로 받은 결과]
 
