@@ -1,5 +1,6 @@
 #pragma once 
 
+#include "stdafx.h"
 #include "Common/Common.h"
 #include "Public/FileDescriptor/FileDescriptor.h"
 
@@ -8,16 +9,18 @@
 
 class SharedMemory {
 public:
-    SharedMemory(const char* name, size_t size);
+    SharedMemory();
     ~SharedMemory();
 
-    void* GetMemory();
-    void Post();
-    void Wait();
+    void PostCpp(int uid);
+    void WaitCpp(int uid);
 
+private:
     static int shared_memory_fd;
     
     // 세마포어 최적화 필요 (동기화 병목 문제)
-    sem_t* sem_csharp;
-    sem_t* sem_cpp;
+    static sem_t* sem_csharp;
+    static sem_t* sem_cpp;
+
+    static char* data;
 };
