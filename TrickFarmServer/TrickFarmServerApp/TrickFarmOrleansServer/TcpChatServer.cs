@@ -43,7 +43,7 @@ class TcpChatServer
             {
                 var client_grain = _grainFactory.GetGrain<IChatClientGrain>(user_guid);
                 Console.WriteLine($"Redis에 기록 성공! 어서오세요 {user_name}님");
-                ClientRequestWorkerAsync(client_socket);
+                await ClientRequestWorkerAsync(client_socket, client_grain);
             }
             else
             {
@@ -58,12 +58,17 @@ class TcpChatServer
 
     private async Task ClientRequestWorkerAsync(TcpClient client_socket, IChatClientGrain client_grain)
     {
+        var client_stream = client_socket.GetStream();
         while(true) 
         {
-            
-            switch(buffer[0]) 
+            byte[] request_buffer = new byte[1024];
+            // client_stream.ReadAsync()
+            switch(request_buffer[0]) 
             {
                 
+                default: {
+                    break;
+                }
             }
         }
     }
