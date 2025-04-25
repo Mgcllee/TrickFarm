@@ -1,7 +1,8 @@
 #pragma once 
 
 #include "stdafx.h"
-#include "Common/Common.h"
+#include "Common/SHMCommon.h"
+#include "Common/SHMClient.h"
 #include "Public/FileDescriptor/FileDescriptor.h"
 
 #include <semaphore.h>

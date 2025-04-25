@@ -1,3 +1,3 @@
-/workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEPoll/CMakeFiles/TrickFarmEPollServer-cmake.dir
-/workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEPoll/CMakeFiles/edit_cache.dir
-/workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEPoll/CMakeFiles/rebuild_cache.dir
+/workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEpoll/CMakeFiles/TrickFarmEPollServer-cmake.dir
+/workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEpoll/CMakeFiles/edit_cache.dir
+/workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEpoll/CMakeFiles/rebuild_cache.dir

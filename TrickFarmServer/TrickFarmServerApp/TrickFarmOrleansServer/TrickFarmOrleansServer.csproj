@@ -13,4 +13,7 @@
     <PackageReference Include="OrleansDashboard" Version="8.2.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.31" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Common\Common.cs" />
+</ItemGroup>
 </Project>

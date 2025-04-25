@@ -60,7 +60,7 @@ EQUALS = =
 CMAKE_SOURCE_DIR = /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEPoll
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEPoll
+CMAKE_BINARY_DIR = /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEpoll
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEPoll/CMakeFiles /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEPoll//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEpoll/CMakeFiles /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEpoll//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEPoll/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEpoll/CMakeFiles 0
 .PHONY : all
 
 # The main clean target

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Public/FileDescriptor/SharedMemory.h"
-#include "SharedMemory.h"
 
 
 SharedMemory::SharedMemory()

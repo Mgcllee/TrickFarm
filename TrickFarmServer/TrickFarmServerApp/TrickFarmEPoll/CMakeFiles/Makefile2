@@ -57,7 +57,7 @@ EQUALS = =
 CMAKE_SOURCE_DIR = /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEPoll
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEPoll
+CMAKE_BINARY_DIR = /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEpoll
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -81,14 +81,14 @@ clean: CMakeFiles/TrickFarmEPollServer-cmake.dir/clean
 CMakeFiles/TrickFarmEPollServer-cmake.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TrickFarmEPollServer-cmake.dir/build.make CMakeFiles/TrickFarmEPollServer-cmake.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TrickFarmEPollServer-cmake.dir/build.make CMakeFiles/TrickFarmEPollServer-cmake.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEPoll/CMakeFiles --progress-num=1,2 "Built target TrickFarmEPollServer-cmake"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEpoll/CMakeFiles --progress-num=1,2 "Built target TrickFarmEPollServer-cmake"
 .PHONY : CMakeFiles/TrickFarmEPollServer-cmake.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/TrickFarmEPollServer-cmake.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEPoll/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEpoll/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/TrickFarmEPollServer-cmake.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEPoll/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /workspaces/TrickFarm/TrickFarmServer/TrickFarmServerApp/TrickFarmEpoll/CMakeFiles 0
 .PHONY : CMakeFiles/TrickFarmEPollServer-cmake.dir/rule
 
 # Convenience name for target.
