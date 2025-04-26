@@ -9,8 +9,9 @@ public class Common
     // public const string sem_cpp2csharp = "/sem_c2csharp";
     public const string SEM_CS_TURN = "/EPollOrleans_cs_turn";
 
-    // 128 Clients (each memory 1024 byte)
-    public const int SHM_SIZE = 131072; //(128 * 1024)
+    public const int MAX_CLIENT = 128;
+
+    public readonly int SHM_SIZE = MAX_CLIENT * Marshal.SizeOf(new SHM_CLIENT());
 
     public const int MESSAGE_BUFFER_SIZE = 200;
     public const int USER_NAME_SIZE = 10;

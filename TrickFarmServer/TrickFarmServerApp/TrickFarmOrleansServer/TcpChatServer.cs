@@ -28,6 +28,8 @@ class TcpChatServer
         IntPtr semWrite = Posix.SEM_FAILED;
         IntPtr semRead = Posix.SEM_FAILED;
         
+        
+
         try {
             shm_fd = Posix.shm_open(Common.SHM_NAME, Posix.O_RDWR, 0);
             mappedPtr = Posix.mmap(IntPtr.Zero, Common.SHM_SIZE, Posix.PROT_READ, Posix.MAP_SHARED, shm_fd, IntPtr.Zero);
