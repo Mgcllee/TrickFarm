@@ -1,10 +1,5 @@
 # Trick Farm
 
-![실행화면](/Document/Image/TrickFarmServer_runtime_0414.png)  
-[Orleans with Dashboard, Azure VM(Ubuntu), Blazor 클라이언트트 실행 화면]
-
-[개발 계획표](https://github.com/users/Mgcllee/projects/4)
-
 * 서버에서 클라이언트 정보를 관리하기 위해 클라이언트 1개 당 Orleans Grain 1개씩 확보.  
 * 각 클라이언트는 채팅 방에 입장한 뒤에 채팅을 시작할 수 있으며, 채팅 방은 클라이언트처럼 **Grain** 으로 관리  
 * 클라이언트와 통신하기 위해 서버는 EPoll을 사용해서 소켓 연결  
@@ -14,17 +9,20 @@
 
 <br/>
 
-# Trick Farm 구조도
-
-![구조도](/Document/Image/TrickFarm_구현도_03.png)
-
-[TrickFarm 실행 구조]
+## Orleans with Dashboard, Azure VM(Ubuntu), Blazor 클라이언트트 실행 화면
+![실행화면](/Document/Image/TrickFarmServer_runtime_0414.png)  
 
 <br/>
 
-![슬랙알림](/Document/Image/NotifySlack.png)
+## Trick Farm 구조도
 
-[Git Commit, GitHub Action 결과를 Slack으로 받은 결과]
+<p align="center"><img src="/Document/Image/TrickFarm_구현도_03.png" width="600" height="600"></p>
+
+<br/>
+
+<p align="center"><img src="/Document/Image/NotifySlack.png" width="300" height="150"></p>
+
+<p align="center">[Git Commit, GitHub Action 결과를 Slack으로 받은 결과]</p>
 
 <br/>
 
@@ -33,10 +31,8 @@
 |TrickFarmServer|Client 객체 관리 및 Redis 정보 관리| 2vCPU, 1GiB 메모리|Ubuntu server 22.04 LTS|
 |TrickFarmWebApp|Web 요청 처리 및 TrickFarmServer 연결| 2vCPU, 1GiB 메모리|Ubuntu server 22.04 LTS|
 
-* Azure virtual network, Azure Container Registry, Azure Public IP 활용.  
-
 <br/>
 
-# Trick Farm 개발 과정
+## Trick Farm 개발 과정
 
-![유저접속과정](/Document/Image/TrickFarm_개발순서도_03.png)
+<p align="center"><img src="/Document/Image/TrickFarm_개발순서도_03.png" width="500" height="500"></p>
