@@ -13,9 +13,18 @@ int main() {
     // [Posix Shared memory]
     SharedMemory shm;
     
+    
 
     // [EPoll Server]
+    Networker networker;
+    if (!networker.init_network_settings()) {
+        printf("Failed to initialize network settings.");
+        return -1;
+    }
 
+    while (true) {
+        networker.process_packet();
+    }
 
     return 0;
 }
