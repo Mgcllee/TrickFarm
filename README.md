@@ -14,6 +14,28 @@
 
 <br/>
 
+---
+
+#### 접속 방법
+
+1. 아래의 주소를 웹 브라우저로 접속 (대시보드는 http를 사용하므로 접속에 주의 필요)
+2. 클라이언트의 메뉴 중 'Home', 'Counter', 'Weather'는 접속이 가능  
+   'Chat'은 Orleans 서버가 동작일 때 접속 가능  
+3. **(필수)**'Chat' 페이지에 접속하면 채팅 입력 칸에 아래와 같은 순서로 입력('Enter'키 혹은 전송 버튼으로 송신)  
+   a. 사용할 '이름' 입력  
+   b. 'join '과 함께 입장할 방 이름 입력 (ex. join 초보만 대환영)  
+   c. 자유롭게 채팅 입력 가능  
+   d. 채팅방을 떠날 경우, 'leave'만 입력하여 채팅방 퇴장 가능  
+
+Blazor Client URL: https://trickfarmweb.koreacentral.cloudapp.azure.com  
+  
+Orleans Dashboard URL: http://trickfarm-orleans.koreacentral.cloudapp.azure.com:8080/dashboard  
+(Orleans Dashboard는 편의를 위해 HTTPS가 아닌 HTTP를 사용, 접속시 주의)  
+
+---
+
+<br/>
+
 ## Trick Farm 구조도
 
 <p align="center"><img src="/Document/Image/TrickFarm_구현도_03.png" width="600" height="600"></p>
