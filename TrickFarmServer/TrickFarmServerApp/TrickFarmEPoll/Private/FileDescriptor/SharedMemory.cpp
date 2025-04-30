@@ -25,48 +25,27 @@ SharedMemory::~SharedMemory()
     sem_unlink(SEM_CPP_TURN);
 }
 
-void SharedMemory::PostCpp(int uid)
+void SharedMemory::notify_message_to_csharp(int uid, std::string message)
 {
     // TODO: Add Thread Safe logic
     int t = 0;
     for(; t < 10; ++t) {
-        if(shm_clients[uid] != 0) usleep(100);
+        if(shm_clients[uid].turn != SHM_CLIENT_TYPE::turn_cpp) usleep(100);
         else break;
     }
-    if(t == 10 && shm_clients[uid] != 0) {
+    if(t == 10 && shm_clients[uid].turn != SHM_CLIENT_TYPE::turn_cpp) {
         printf("[Error][SharedMemory::PostCpp] shm_clients[uid]: %d\n", uid);
     }
     else {
-        shm_clients[uid] = 1;
-        
-        uint32_t packet_len;
-        memcpy(shm_clients + uid + 1, &packet_len, 4);
-        uint32_t packet_type;
-        memcpy(shm_clients + uid + 5, &packet_type, 4);
-
-        // memcpy(data + uid + 9, &packet, packet_len);
-
-        // Notify C#
-        sem_post(sem_csharp);
+        memcpy(&shm_clients[uid].message, &message, message.length() + 1);
+        shm_clients[uid].turn = SHM_CLIENT_TYPE::turn_csharp;
+        sem_post(sem_csharp); // Notify C#
     }
 }
 
-void SharedMemory::WaitCpp(int uid)
+void SharedMemory::notify_message_to_cpp(int uid, std::string message)
 {
-    // wait for C# response
-    sem_wait(sem_cpp);
-
-    uint32_t packet_len;
-    memcpy(&packet_len, shm_clients + uid + 1, 4);
-    
-    uint32_t packet_type;
-    memcpy(&packet_type, shm_clients + uid + 5, 4);
-
-    switch(packet_type) {
-        default: {
-            break;
-        }
-    }
-
-    shm_clients[uid] = 0;
+    sem_wait(sem_cpp);  // wait for C# response
+    strcpy(shm_clients[uid].username, message.c_str());
+    shm_clients[uid].turn = SHM_CLIENT_TYPE::turn_csharp;
 }
