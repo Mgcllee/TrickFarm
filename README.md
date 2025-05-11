@@ -27,6 +27,10 @@
    c. 자유롭게 채팅 입력 가능  
    d. 채팅방을 떠날 경우, 'leave'만 입력하여 채팅방 퇴장 가능  
 
+<br/>
+
+* 현재 개발이 진행 중인 프로젝트로 **비정상적 동작이 있을 수 있습니다.**
+
 Blazor Client URL: https://trickfarmweb.koreacentral.cloudapp.azure.com  
   
 Orleans Dashboard URL: http://trickfarm-orleans.koreacentral.cloudapp.azure.com:8080/dashboard  
