@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using TrickFarmWebApp.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,13 @@ builder.Services.AddResponseCompression(opts =>
         ["application/octet-stream"]);
 });
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 builder.WebHost.UseUrls("http://*:8081");
 
 var app = builder.Build();
@@ -30,6 +38,7 @@ var app = builder.Build();
 var hubContext = app.Services.GetRequiredService<IHubContext<ChatHub>>();
 GlobalHubContext.Initialize(hubContext);
 
+app.UseForwardedHeaders();
 app.UseResponseCompression();
 
 if (app.Environment.IsDevelopment())
@@ -41,8 +50,6 @@ else
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
-
-// app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
