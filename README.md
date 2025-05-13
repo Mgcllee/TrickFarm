@@ -5,7 +5,7 @@
 * 클라이언트와 통신하기 위해 서버는 EPoll을 사용해서 소켓 연결  
 * EPoll Server가 새롭게 작성한 클라이언트 배열을 Orleans Server가 읽고 해당 클라이언트 Grain 정보를 갱신
 * Redis로 현재 접속한 클라이언트의 Guid 값과 채팅에 표시될 이름을 함께 저장.
-* 각 Grain에서 Redis에 접근하기 위해 Redis를 관리하는 class를 Singleton 객체로 관리  
+* 각 Grain에서 Redis에 접근하기 위해 Redis를 관리하는 class를 Singleton 객체로 관리
 
 > 최신 릴리즈 버전 위치: [TrickFarm GitHub](https://github.com/Mgcllee/TrickFarm/tree/570f15198015d8f055f49818490b9c0d26398ffa/TrickFarmServer)
 
@@ -37,6 +37,7 @@
 <br/>
 
 * 현재 개발이 진행 중인 프로젝트로 **비정상적 동작이 있을 수 있습니다.**
+* Azure VM 크기가 작아 **반응속도가 느릴 수 있습니다.**
 
 Blazor Client URL: https://trickfarmweb.koreacentral.cloudapp.azure.com  
   
