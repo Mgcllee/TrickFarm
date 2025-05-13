@@ -7,6 +7,8 @@
 * Redis로 현재 접속한 클라이언트의 Guid 값과 채팅에 표시될 이름을 함께 저장.
 * 각 Grain에서 Redis에 접근하기 위해 Redis를 관리하는 class를 Singleton 객체로 관리  
 
+> Trick Farm 리뷰 글: [mgcllee 블로그](https://mgcllee.github.io/categories/trick-farm/)
+
 <br/>
 
 ## Orleans with Dashboard, Azure VM(Ubuntu), Blazor 클라이언트트 실행 화면
