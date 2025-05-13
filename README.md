@@ -7,6 +7,8 @@
 * Redis로 현재 접속한 클라이언트의 Guid 값과 채팅에 표시될 이름을 함께 저장.
 * 각 Grain에서 Redis에 접근하기 위해 Redis를 관리하는 class를 Singleton 객체로 관리  
 
+> 최신 릴리즈 버전 위치: [TrickFarm GitHub](https://github.com/Mgcllee/TrickFarm/tree/570f15198015d8f055f49818490b9c0d26398ffa/TrickFarmServer)
+
 > Trick Farm 리뷰 글: [mgcllee 블로그](https://mgcllee.github.io/categories/trick-farm/)
 
 <br/>
