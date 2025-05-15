@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
@@ -31,7 +30,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 
-builder.WebHost.UseUrls("http://*:8081");
+builder.WebHost.UseUrls("http://0.0.0.0:8081");
 
 var app = builder.Build();
 
