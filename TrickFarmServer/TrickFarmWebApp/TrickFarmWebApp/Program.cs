@@ -26,8 +26,10 @@ builder.Services.AddResponseCompression(opts =>
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    options.KnownNetworks.Clear();
-    options.KnownProxies.Clear();
+    // options.KnownNetworks.Clear();
+    // options.KnownProxies.Clear();
+
+    options.KnownProxies.Add(System.Net.IPAddress.Parse("172.17.0.1"));
 });
 
 builder.WebHost.UseUrls("http://0.0.0.0:8081");
