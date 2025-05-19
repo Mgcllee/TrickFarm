@@ -11,7 +11,22 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
+builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions>(options =>
+{
+    options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(60);
+    options.JSInteropDefaultCallTimeout = TimeSpan.FromSeconds(30);
+    options.DetailedErrors = true;
+});
+
 builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
+});
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo("/app/dataprotection-keys"))
     .SetApplicationName("TrickFarmWebApp")
