@@ -21,8 +21,8 @@ builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions
 builder.Services.AddSignalR();
 builder.Services.AddSignalR(options =>
 {
-    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
-    options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
+    options.KeepAliveInterval = TimeSpan.FromSeconds(300);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(600);
 });
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
@@ -41,9 +41,6 @@ builder.Services.AddResponseCompression(opts =>
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    // options.KnownNetworks.Clear();
-    // options.KnownProxies.Clear();
-
     options.KnownProxies.Add(System.Net.IPAddress.Parse("172.17.0.1"));
 });
 
