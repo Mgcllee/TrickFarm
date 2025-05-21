@@ -1,7 +1,5 @@
-﻿using System.Security.AccessControl;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using StackExchange.Redis;
 
 public static class Program
 {

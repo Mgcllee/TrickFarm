@@ -18,7 +18,7 @@ public class ClientConnector : IClientConnector
 
     public async Task start_client_accepter()
     {
-        TcpListener tcpListener = new TcpListener(IPAddress.Any, port: 7070);
+        TcpListener tcpListener = new TcpListener(IPAddress.Any, port: 5000);
         tcpListener.Start();
 
         while (true)

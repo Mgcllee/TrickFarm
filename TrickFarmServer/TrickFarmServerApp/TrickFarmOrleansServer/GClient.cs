@@ -1,7 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Text;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 public class GClient : IChatClient
 {
@@ -95,6 +94,19 @@ public class GClient : IChatClient
                         {
                             await chatroom_grain.broadcast_message(chat_message);
                         }
+                        break;
+                    }
+                case PACKET_TYPE.C2S_LEAVE_CHATROOM:
+                    {
+                        C2S_LEAVE_CHATROOM_PACKET leave_request = ByteArrayToStructure<C2S_LEAVE_CHATROOM_PACKET>(buffer)!;
+                        if(leave_request is null)
+                            break;
+                        if(leave_request.chatroom_name is null)
+                            break;
+
+                        string chatroom_name = leave_request.chatroom_name.ToString()!;
+                        var chatroom_grain = grainFactory.GetGrain<IChatRoomGrain>(chatroom_name);
+                        await chatroom_grain.leave_user(user_guid);
                         break;
                     }
                 case PACKET_TYPE.C2S_LOGOUT_USER:

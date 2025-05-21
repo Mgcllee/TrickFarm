@@ -38,6 +38,13 @@ class C2S_ENTER_CHATROOM_PACKET : BASIC_PACKET
 };
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
+class C2S_LEAVE_CHATROOM_PACKET : BASIC_PACKET
+{
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+    public byte[] chatroom_name = new byte[10];
+};
+
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 class C2S_MESSAGE_PACKET : BASIC_PACKET
 {
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
