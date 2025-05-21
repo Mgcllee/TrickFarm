@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 public class GClient : IChatClient
 {
@@ -8,14 +9,15 @@ public class GClient : IChatClient
     private TcpClient tcp_socket;
     private IGrainFactory grainFactory;
     private RedisConnector redisConnector;
-    private string user_name;
+    public string user_name = "";
     private Guid user_guid;
-    private string chatroom_name;
+    private string chatroom_name = "";
 
-    public GClient(TcpClient tcpClient, IGrainFactory grainFactory, Guid user_guid)
+    public GClient(TcpClient tcpClient, IGrainFactory grainFactory, RedisConnector redisConnector,  Guid user_guid)
     {
         this.tcp_socket = tcpClient;
         this.grainFactory = grainFactory;
+        this.redisConnector = redisConnector;
         this.is_exist_client = true;
         this.user_guid = user_guid;
     }
@@ -34,7 +36,12 @@ public class GClient : IChatClient
 
     public async Task send_to_client_chat_message(string message)
     {
-        byte[] buffer = Encoding.UTF8.GetBytes(message);
+        S2C_MESSAGE_PACKET packet = new S2C_MESSAGE_PACKET();
+        packet.size = (byte)Marshal.SizeOf(packet);
+        packet.type = (byte)PACKET_TYPE.S2C_CHAT_MESSAGE;
+        Array.Copy(message.ToArray(), packet.message, message.Length);
+
+        byte[] buffer = StructureToByteArray(packet);
         await tcp_socket.GetStream().WriteAsync(buffer, 0, buffer.Length);
     }
 
@@ -44,29 +51,62 @@ public class GClient : IChatClient
         while (true)
         {
             int len = await tcp_socket.GetStream().ReadAsync(buffer, 0, buffer.Length);
+            if(len <= 0) 
+                continue;
 
             PACKET_TYPE packet_type = (PACKET_TYPE)buffer[0];
             switch (packet_type)
             {
                 case PACKET_TYPE.C2S_LOGIN_USER:
                     {
-                        C2S_LOGIN_PACKET login_info = ByteArrayToStructure<C2S_LOGIN_PACKET>(buffer);
+                        C2S_LOGIN_PACKET login_info = ByteArrayToStructure<C2S_LOGIN_PACKET>(buffer)!;
+                        if(login_info is null) 
+                            break;
+                        
                         string input_user_name = login_info.user_name.ToString()!;
                         await make_grain(input_user_name);
                         break;
                     }
+                case PACKET_TYPE.C2S_ENTER_CHATROOM:
+                    {
+                        C2S_ENTER_CHATROOM_PACKET chatroom_info = ByteArrayToStructure<C2S_ENTER_CHATROOM_PACKET>(buffer)!;
+                        if(chatroom_info is null)
+                            break;
+                        
+                        chatroom_name = chatroom_info.chatroom_name.ToString()!;
+                        if(chatroom_name is null)
+                            break;
+
+                        var chatroom_grain = grainFactory.GetGrain<IChatRoomGrain>(chatroom_name);
+                        await chatroom_grain.join_user(user_guid, user_name);
+                        break;  
+                    }
                 case PACKET_TYPE.C2S_CHAT_MESSAGE:
                     {
-                        C2S_MESSAGE_PACKET message_packet = ByteArrayToStructure<C2S_MESSAGE_PACKET>(buffer);
+                        C2S_MESSAGE_PACKET message_packet = ByteArrayToStructure<C2S_MESSAGE_PACKET>(buffer)!;
+                        if(message_packet is null)
+                            break;
+                        if(message_packet.message is null)
+                            break;
+
                         var chatroom_grain = grainFactory.GetGrain<IChatRoomGrain>(chatroom_name);
-                        await chatroom_grain.broadcast_message(message_packet.message.ToString());
+                        string chat_message = message_packet.message.ToString()!;
+                        if(chat_message is not null && chat_message.Length > 0) 
+                        {
+                            await chatroom_grain.broadcast_message(chat_message);
+                        }
+                        break;
+                    }
+                case PACKET_TYPE.C2S_LOGOUT_USER:
+                    {
+                        await ClientConnector.discoonect_client(user_guid);
                         break;
                     }
             }
         }
     }
 
-    private T ByteArrayToStructure<T>(byte[] bytes) where T : class
+    private T? ByteArrayToStructure<T>(byte[] bytes) where T : class
     {
         IntPtr ptr = Marshal.AllocHGlobal(bytes.Length);
         try
@@ -80,6 +120,25 @@ public class GClient : IChatClient
         }
     }
 
+    private byte[] StructureToByteArray<T>(T obj) where T : class
+    {
+        int size = Marshal.SizeOf(obj);
+        byte[] bytes = new byte[size];
+
+        IntPtr ptr = Marshal.AllocHGlobal(size);
+        try
+        {
+            Marshal.StructureToPtr(obj, ptr, true);
+            Marshal.Copy(ptr, bytes, 0, size);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(ptr);
+        }
+
+        return bytes;
+    }
+ 
     private async Task make_grain(string user_name)
     {
         if (user_name is not null)
@@ -89,10 +148,8 @@ public class GClient : IChatClient
         }
         else return;
 
-        // TODO: 금지어, 형식이 추가될 때 마다 하드 코딩은 비효율. > 개선 필요.
-        if (user_name is not "leave"
-        && 0 < user_name.Length && user_name.Length < 10
-        && user_name.Contains(" "))
+        var is_exist_user_name = await exist_user_name(user_name);
+        if (is_exist_user_name)
         {
             if (redisConnector.write_user_info(user_guid, user_name))
             {
@@ -108,5 +165,22 @@ public class GClient : IChatClient
         {
             Console.WriteLine($"Redis에 기록 실패... user_name: {user_name}");
         }
+    }
+
+    private Task<bool> exist_user_name(string input_name)
+    {
+        // TODO: 금지어, 형식이 추가될 때 마다 하드 코딩은 비효율. > 개선 필요.
+        if (user_name is not "leave"
+            && 0 < user_name.Length && user_name.Length < 10
+            && user_name.Contains(" "))
+            return Task.FromResult(true);
+        else 
+            return Task.FromResult(false);
+    }
+
+    public async Task disconnect() {
+        var client_grain = grainFactory.GetGrain<IChatClientGrain>(user_guid);
+        await client_grain.leave_client();
+        tcp_socket.Dispose();
     }
 }

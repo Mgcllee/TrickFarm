@@ -23,56 +23,54 @@ public class ChatRoomGrain : Grain, IChatRoomGrain
         this.grain_factory = grain_factory;
     }
 
-    public Task<bool> join_user(long user_guid, string user_name)
+    public async Task join_user(Guid user_guid, string user_name)
     {
+        string formatted_message;
         if (clients.TryAdd(user_guid, user_name))
         {
-            Console.WriteLine($"{user_name}님이 {this.GetPrimaryKeyString()} 방에 입장하셨습니다.");
-            return Task.FromResult(true);
+            formatted_message = $"{user_name}님이 {this.GetPrimaryKeyString()} 방에 입장하셨습니다.";
         }
         else
         {
-            return Task.FromResult(false);
+            formatted_message = $"{user_name}님이 {this.GetPrimaryKeyString()} 방에 입장 실패!";
         }
+        Console.WriteLine(formatted_message);
+        await ClientConnector.clients[user_guid].send_to_client_chat_message(formatted_message);
     }
+
     public Task<List<string>> get_chat_log()
     {
         return Task.FromResult(chat_log);
     }
 
-    public Task broadcast_message(string formatted_message)
+    public async Task broadcast_message(string formatted_message)
     {
         chat_log.Add(formatted_message);
         foreach (var client in clients)
         {
-            var client_grain = GrainFactory.GetGrain<IChatClientGrain>(client.Key);
-            client_grain.send_to_client(formatted_message);
+            await ClientConnector.clients[client.Key].send_to_client_chat_message(formatted_message);
         }
-        return Task.CompletedTask;
     }
 
-    public Task<bool> leave_user(long user_guid) 
+    public async Task leave_user(Guid user_guid) 
     { 
         if(clients.TryRemove(user_guid, out var value))
         {
-            string message = $"{value}님이 {this.GetPrimaryKeyString()} 방을 떠났습니다.";
-            Console.WriteLine(message);
+            string formatted_message = $"{value}님이 {this.GetPrimaryKeyString()} 방을 떠났습니다.";
             foreach (var client in clients)
             {
                 if (client.Key != user_guid)
                 {
-                    var client_grain = GrainFactory.GetGrain<IChatClientGrain>(client.Key);
-                    client_grain.send_to_client(message);
+                    await ClientConnector.clients[client.Key].send_to_client_chat_message(formatted_message);
                 }
             }
+            Console.WriteLine(formatted_message);
         }
 
         if(clients.Count() == 0)
         {
             DeactivateOnIdle();
         }
-
-        return Task.FromResult(false);
     }
 
     public override Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)

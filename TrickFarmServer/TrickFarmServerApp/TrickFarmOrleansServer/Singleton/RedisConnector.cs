@@ -22,7 +22,7 @@ public class RedisConnector : IRedisConnector
         return user_db.StringGet(user_guid.ToString());
     }
 
-    public bool delete_user_info(long user_guid)
+    public bool delete_user_info(Guid user_guid)
     {
         if (user_db.KeyExists(user_guid.ToString()))
         {

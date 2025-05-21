@@ -6,7 +6,7 @@ public class ChatClientGrain : Grain, IChatClientGrain
     private ClientConnector client_connector = null!;
     private RedisConnector redis_connector = null!;
 
-    private long grain_ticket = -1;
+    private Guid grain_id;
     private string user_name = null!;
     private string user_chatroom_name = null!;
     private bool enter_chatroom = false;
@@ -20,21 +20,21 @@ public class ChatClientGrain : Grain, IChatClientGrain
 
     public override Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        grain_ticket = this.GetPrimaryKeyLong();
-        user_name = redis_connector.get_user_name(grain_ticket)!;
-        Console.WriteLine($"ChatClientGrain::OnActivateAsync: {grain_ticket}, {user_name}");
+        grain_id = this.GetPrimaryKey();
+        user_name = redis_connector.get_user_name(grain_id)!;
+        Console.WriteLine($"ChatClientGrain::OnActivateAsync: {grain_id}, {user_name}");
         return Task.CompletedTask;
     }
 
     public override Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
     {
-        if (redis_connector.delete_user_info(grain_ticket))
+        if (redis_connector.delete_user_info(grain_id))
         {
-            Console.WriteLine($"Grain::OnDeactivateAsync: {grain_ticket}");
+            Console.WriteLine($"Grain::OnDeactivateAsync: {grain_id}");
         }
         else
         {
-            Console.WriteLine($"[Error][OnDeactivateAsync]: {grain_ticket}를 찾을 수 없음");
+            Console.WriteLine($"[Error][OnDeactivateAsync]: {grain_id}를 찾을 수 없음");
         }
         return base.OnDeactivateAsync(reason, cancellationToken);
     }
@@ -54,7 +54,7 @@ public class ChatClientGrain : Grain, IChatClientGrain
         {
             user_chatroom_name = message.Split(new[] { ' ' }, 2)[1];
             var chatroom_grain = grain_factory.GetGrain<IChatRoomGrain>(user_chatroom_name);
-            await chatroom_grain.join_user(grain_ticket, user_name);
+            await chatroom_grain.join_user(grain_id, user_name);
             await join_chat_room(user_chatroom_name);
             enter_chatroom = true;
         }
@@ -71,25 +71,17 @@ public class ChatClientGrain : Grain, IChatClientGrain
         return Task.CompletedTask;
     }
 
-    public Task send_to_client(string message)
-    {
-        byte[] bytes = Encoding.UTF8.GetBytes(message);
-
-        client_connector.get_client_connector(grain_ticket);
-        
-        return Task.CompletedTask;
-    }
-
-    public Task leave_client()
+    public async Task leave_client()
     {
         var chatroom_grain = grain_factory.GetGrain<IChatRoomGrain>(user_chatroom_name);
         if (chatroom_grain is not null)
         {
-            chatroom_grain.leave_user(grain_ticket);
+            await chatroom_grain.leave_user(grain_id);
         }
         
+        await ClientConnector.check_exist_client();
+
         DeactivateOnIdle();
-        return Task.CompletedTask;
     }
 }
 

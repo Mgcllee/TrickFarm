@@ -1,38 +1,90 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
+using System.Net;
 
 public class ClientConnector : IClientConnector
 {
-    private readonly ConcurrentDictionary<Guid, TcpClient> clients = new();    
+    static public readonly ConcurrentDictionary<Guid, GClient> clients = new();    
 
-    public Guid add_client_connector(TcpClient client_socket)
+    private readonly IGrainFactory _grainFactory;
+
+    private readonly RedisConnector redis_connector;
+
+    public ClientConnector(IGrainFactory grainFactory, RedisConnector redisConnector)
+    {
+        _grainFactory = grainFactory;
+        this.redis_connector = redisConnector;
+    }
+
+    public async Task start_client_accepter()
+    {
+        TcpListener tcpListener = new TcpListener(IPAddress.Any, port: 7070);
+        tcpListener.Start();
+
+        while (true)
+        {
+            await check_exist_client();
+            TcpClient new_client = await tcpListener.AcceptTcpClientAsync();
+
+            if (new_client is null || false == new_client.Connected)
+                continue;
+
+            await add_gclient(new_client);
+        }
+    }
+
+    public async Task add_gclient(TcpClient client_socket)
     {
         Guid new_client_guid = Guid.NewGuid();
-        clients.TryAdd(new_client_guid, client_socket);
-        return new_client_guid;
-    }
-    public TcpClient? get_client_connector(Guid user_guid)
-    {
-        return clients.TryGetValue(user_guid, out var client_socket) ? client_socket : null;
+        var exist_client = new GClient(client_socket, _grainFactory, redis_connector, new_client_guid);
+        await exist_client.process_request();
+        clients.TryAdd(new_client_guid, exist_client);
     }
 
-    public void discoonect_client(Guid user_guid)
+    static public async Task check_exist_client()
     {
-        clients.TryRemove(user_guid, out var client_socket);
-
-        if (client_socket is not null)
+        foreach (var elem in clients)
         {
-            client_socket.Dispose();
+            GClient clinet = elem.Value;
+            if (clinet.is_exist_client is false)
+            {
+                clients.Remove(elem.Key, out var g_client);
+                if(g_client is not null)
+                {
+                    await g_client.disconnect();
+                }
+            }
         }
-
-        Console.WriteLine($"{user_guid.ToString()}님 연결 종료");
     }
 
-    public void disconnect_all_clients()
+    static public async Task discoonect_client(Guid user_guid)
+    {
+        clients.TryRemove(user_guid, out var gClient);
+
+        if (gClient is not null)
+        {
+            Console.WriteLine($"{gClient.user_name}님 연결 종료");
+            await gClient.disconnect();
+        }
+        else 
+        {
+            Console.WriteLine($"유효하지 않는 클라이언트를 연결 종료 시도함");
+        }
+    }
+
+    public async Task disconnect_all_clients()
     {
         foreach (var client_socket in clients.Values)
         {
-            client_socket.Dispose();
+            await client_socket.disconnect();
         }
+    }
+
+    public void stop_server_accepter()
+    {
+        redis_connector.disconnect_redis();
+        Console.WriteLine("Redis 메모리 FlushALL 처리 완료");
+        clients.Clear();
+        Console.WriteLine("clients 모든 원소 제거 완료");
     }
 }

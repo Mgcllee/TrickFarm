@@ -6,11 +6,10 @@ using StackExchange.Redis;
 public static class Program
 {
     private static IHost host = null!;
-    private static ClientAccepter server = null!;
 
     public static async Task Main()
     {   
-        Console.CancelKeyPress += new ConsoleCancelEventHandler(OnProcessExit);
+        Console.CancelKeyPress += new ConsoleCancelEventHandler(OnProcessExit!);
         host = new HostBuilder()
             .UseOrleans(siloBuilder =>
             {
@@ -19,6 +18,7 @@ public static class Program
                 siloBuilder.ConfigureServices(services =>
                 {
                     services.AddSingleton<RedisConnector>();
+                    services.AddSingleton<ClientConnector>();
                 });
 
                 siloBuilder.UseDashboard(options =>
@@ -34,10 +34,8 @@ public static class Program
 
         var grainFactory = host.Services.GetRequiredService<IGrainFactory>();
         var redisConnector = host.Services.GetRequiredService<RedisConnector>();
-
-        server = new ClientAccepter(grainFactory, redisConnector);
-
-        server.start_client_accepter();
+        var client_accepter = host.Services.GetRequiredService<ClientConnector>();
+        await client_accepter.start_client_accepter();
         
         await host.WaitForShutdownAsync();
         Environment.Exit(0);
@@ -50,8 +48,7 @@ public static class Program
         await host.WaitForShutdownAsync();
         Console.WriteLine("Orleans 종료");
 
-        server.StopServer();
-
+        host.Services.GetRequiredService<ClientConnector>().stop_server_accepter();
         Environment.Exit(0);
     }
 }
