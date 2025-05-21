@@ -23,7 +23,7 @@ public class ChatRoomGrain : Grain, IChatRoomGrain
         this.grain_factory = grain_factory;
     }
 
-    public Task<bool> join_user(Guid user_guid, string user_name)
+    public Task<bool> join_user(long user_guid, string user_name)
     {
         if (clients.TryAdd(user_guid, user_name))
         {
@@ -51,7 +51,7 @@ public class ChatRoomGrain : Grain, IChatRoomGrain
         return Task.CompletedTask;
     }
 
-    public Task<bool> leave_user(Guid user_guid) 
+    public Task<bool> leave_user(long user_guid) 
     { 
         if(clients.TryRemove(user_guid, out var value))
         {

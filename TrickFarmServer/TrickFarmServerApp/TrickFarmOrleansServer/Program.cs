@@ -6,7 +6,7 @@ using StackExchange.Redis;
 public static class Program
 {
     private static IHost host = null!;
-    private static TcpChatServer server = null!;
+    private static ClientAccepter server = null!;
 
     public static async Task Main()
     {   
@@ -21,10 +21,9 @@ public static class Program
                     services.AddSingleton<RedisConnector>();
                 });
 
-                // Orleans 대시보드 설정 ( http://localhost:8080/dashboard )
                 siloBuilder.UseDashboard(options =>
                 {
-                    options.Host = "*"; 
+                    options.Host = "*";
                     options.Port = 8080; 
                     options.BasePath = "/dashboard";
                     options.HostSelf = true; 
@@ -34,8 +33,12 @@ public static class Program
         await host.StartAsync();
 
         var grainFactory = host.Services.GetRequiredService<IGrainFactory>();
-        server = new TcpChatServer(grainFactory);
-        await server.StartAsync(host.Services.GetRequiredService<RedisConnector>());
+        var redisConnector = host.Services.GetRequiredService<RedisConnector>();
+
+        server = new ClientAccepter(grainFactory, redisConnector);
+
+        server.start_client_accepter();
+        
         await host.WaitForShutdownAsync();
         Environment.Exit(0);
     }
