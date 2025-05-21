@@ -7,7 +7,11 @@ public class RedisConnector : IRedisConnector
     public RedisConnector()
     {
         redis = ConnectionMultiplexer
-    .Connect(new ConfigurationOptions { EndPoints = { $"localhost:6379" }, AllowAdmin = true });
+    .Connect(new ConfigurationOptions 
+    { 
+        EndPoints = { $"redis_server:6379" }, 
+        AllowAdmin = true 
+    });
         user_db = redis.GetDatabase();
         var pong = user_db.Ping();
         Console.WriteLine($"Redis Connection and PongTime: {pong}");

@@ -1,13 +1,14 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-COPY TrickFarmOrleansServer.csproj ./ 
-RUN dotnet restore TrickFarmOrleansServer.csproj
+COPY ["./TrickFarmOrleansServer/TrickFarmOrleansServer.csproj", "./TrickFarmOrleansServer/"]
+COPY ["../Common", "./Common"]
+RUN dotnet restore "./TrickFarmOrleansServer/TrickFarmOrleansServer.csproj"
 
-COPY . ./
+COPY [".", "./"]
 WORKDIR /src
-RUN dotnet build TrickFarmOrleansServer.csproj -c Release -o /app/build
-RUN dotnet publish TrickFarmOrleansServer.csproj -c Release -o /app/publish
+RUN dotnet build ./TrickFarmOrleansServer/TrickFarmOrleansServer.csproj -c Release -o /app/build
+RUN dotnet publish ./TrickFarmOrleansServer/TrickFarmOrleansServer.csproj -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
