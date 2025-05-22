@@ -8,6 +8,12 @@ using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddSingleton(provider =>
+{
+    var hubContext = provider.GetRequiredService<IHubContext<ChatHub>>();
+    return new GlobalClientManager(hubContext);
+});
+
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
@@ -47,9 +53,6 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.WebHost.UseUrls("http://0.0.0.0:8081");
 
 var app = builder.Build();
-
-var hubContext = app.Services.GetRequiredService<IHubContext<ChatHub>>();
-GlobalHubContext.Initialize(hubContext);
 
 app.UseForwardedHeaders();
 app.UseResponseCompression();

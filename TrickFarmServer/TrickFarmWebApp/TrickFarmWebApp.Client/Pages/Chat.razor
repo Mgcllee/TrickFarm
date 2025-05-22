@@ -23,59 +23,59 @@
 
 <style>
     .chat-container {
-    position: fixed;
-    bottom: 0;
-    left: 250px;
-    width: calc(100% - 250px);
-    display: flex;
-    flex-direction: column;
-    height: 80vh;
+        position: fixed;
+        bottom: 0;
+        left: 250px;
+        width: calc(100% - 250px);
+        display: flex;
+        flex-direction: column;
+        height: 80vh;
     }
 
     .chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 10px;
-    background: white;
+        flex: 1;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+        background: white;
     }
 
     .chat-input-bar {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    background-color: #f8f9fa;
-    border-top: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-top: 1px solid #ccc;
     }
 
     .chat-input {
-    flex: 1;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    outline: none;
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        outline: none;
     }
 
     .chat-send-btn {
-    margin-left: 10px;
-    padding: 8px 12px;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-    border-radius: 4px;
+        margin-left: 10px;
+        padding: 8px 12px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        border-radius: 4px;
     }
 
-    .chat-send-btn:hover {
-    background-color: #0056b3;
-    }
+        .chat-send-btn:hover {
+            background-color: #0056b3;
+        }
 </style>
 
 @code {
     private HubConnection? hubConnection;
     private List<string> messages = [];
     private string? user_name;
-    private string? messageInput; 
+    private string? messageInput;
     public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
     private bool enter_chatroom = false;
 
@@ -86,7 +86,7 @@
             .WithAutomaticReconnect()
             .Build();
 
-        hubConnection.On<string>("ReceiveFromServer", (message) =>
+        hubConnection.On<string>("ReceiveChatFromServer", (message) =>
         {
             messages.Add(message);
             InvokeScrollToBottom();
@@ -131,7 +131,7 @@
             }
 
             messageInput = "";
-        } 
+        }
         else
         {
             messageInput = $"hubConnection is {hubConnection is null} and IsConnected is {IsConnected}";
@@ -142,7 +142,6 @@
     {
         if (hubConnection is not null)
         {
-            await hubConnection.SendAsync("LogoutToServer");
             await hubConnection.DisposeAsync();
         }
     }
