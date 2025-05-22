@@ -155,7 +155,7 @@
         }
     }
 
-    private async Task InvokeScrollToBottom()
+    private async void InvokeScrollToBottom()
     {
         await JS.InvokeVoidAsync("eval", @"
             setTimeout(() => {

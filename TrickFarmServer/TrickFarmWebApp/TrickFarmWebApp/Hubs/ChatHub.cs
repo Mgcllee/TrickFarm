@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -74,17 +75,22 @@ public class ChatHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 
-    public async Task LoginToServer(string message)
+    public async Task LoginToServer(string user_name)
     {
         var connectionId = Context.ConnectionId;
 
         if (TcpConnections.TryGetValue(connectionId, out var client))
         {
             var stream = client.GetStream();
-            var buffer = Encoding.UTF8.GetBytes(message);
+
+            C2S_LOGIN_PACKET packet = new C2S_LOGIN_PACKET();
+            packet.size = (byte)Marshal.SizeOf(typeof(C2S_LOGIN_PACKET));
+            packet.type = (byte)PACKET_TYPE.C2S_LOGIN_USER;
+            packet.user_name = Encoding.UTF8.GetBytes(user_name);
+
+            byte[] buffer = StructureToByteArray(packet);
             await stream.WriteAsync(buffer, 0, buffer.Length);
-            await Clients.Client(connectionId)
-                .SendAsync("ReceiveFromServer", $"{message}님 접속 성공!");
+            await send_chat_to_webclient($"{user_name}님 접속 성공!");
         }
     }
 
@@ -95,10 +101,16 @@ public class ChatHub : Hub
         if (TcpConnections.TryGetValue(connectionId, out var client))
         {
             var stream = client.GetStream();
-            var buffer = Encoding.UTF8.GetBytes(request);
+
+            string chatroom_name = request.Replace("join ", "");
+
+            C2S_ENTER_CHATROOM_PACKET packet = new C2S_ENTER_CHATROOM_PACKET();
+            packet.size = (byte)Marshal.SizeOf(typeof(C2S_ENTER_CHATROOM_PACKET));
+            packet.type = (byte)PACKET_TYPE.C2S_ENTER_CHATROOM;
+            packet.chatroom_name = Encoding.UTF8.GetBytes(chatroom_name);
+            byte[] buffer = StructureToByteArray(packet);
             await stream.WriteAsync(buffer, 0, buffer.Length);
-            await Clients.Client(connectionId)
-                .SendAsync("ReceiveFromServer", $"{request.Replace("join ", "")}방에 어서오세요!");
+            await send_chat_to_webclient($"{request.Replace("join ", "")}방에 어서오세요!");
         }
     }
 
@@ -109,7 +121,12 @@ public class ChatHub : Hub
         if (TcpConnections.TryGetValue(connectionId, out var client))
         {
             var stream = client.GetStream();
-            var buffer = Encoding.UTF8.GetBytes(message);
+
+            C2S_MESSAGE_PACKET packet = new C2S_MESSAGE_PACKET();
+            packet.size = (byte)Marshal.SizeOf(typeof(C2S_MESSAGE_PACKET));
+            packet.type = (byte)PACKET_TYPE.C2S_CHAT_MESSAGE;
+            packet.message = Encoding.UTF8.GetBytes(message);
+            byte[] buffer = StructureToByteArray(packet);
             await stream.WriteAsync(buffer, 0, buffer.Length);
         }
     }
@@ -121,7 +138,12 @@ public class ChatHub : Hub
         if(TcpConnections.TryGetValue(connectionId, out var client))
         {
             var stream = client.GetStream();
-            var buffer = Encoding.UTF8.GetBytes("leave");
+
+            C2S_LEAVE_CHATROOM_PACKET packet = new C2S_LEAVE_CHATROOM_PACKET();
+            packet.size = (byte)Marshal.SizeOf(typeof(C2S_LEAVE_CHATROOM_PACKET));
+            packet.type = (byte)PACKET_TYPE.C2S_LEAVE_CHATROOM;
+            packet.chatroom_name = Encoding.UTF8.GetBytes("leave");
+            byte[] buffer = StructureToByteArray(packet);
             await stream.WriteAsync(buffer, 0, buffer.Length);
             client.Dispose();
             Console.WriteLine($"{connectionId}님이 나가셨습니다.");
@@ -130,23 +152,26 @@ public class ChatHub : Hub
 
     private async Task ReceiveLoop(string ConnectionId, TcpClient client, CancellationToken token)
     {
-        if (client is null || client.GetStream() is null) return;
-
-        var stream = client.GetStream();
-        byte[] buffer = new byte[1024];
+        if (client is null || client.GetStream() is null && false == client.Connected)
+        {
+            Console.WriteLine($"[Log][ReceiveLoop] {ConnectionId} 연결이 끊어졌습니다.");
+            return;
+        }
 
         try
         {
+            byte[] buffer = new byte[1024];
             while (!token.IsCancellationRequested)
             {
-                int recv_len = await stream.ReadAsync(buffer, 0, buffer.Length, token);
-                if (recv_len == 0) break;
+                int recv_len = await client.GetStream().ReadAsync(buffer, 0, buffer.Length);
+                if (recv_len <= 0) break;
 
                 string response = Encoding.UTF8.GetString(buffer, 0, recv_len);
 
                 if (GlobalHubContext.HubContext != null)
                 {
-                    await GlobalHubContext.HubContext.Clients.Client(ConnectionId).SendAsync("ReceiveFromServer", response);
+                    // await GlobalHubContext.HubContext.Clients.Client(ConnectionId).SendAsync("ReceiveFromServer", response);
+                    await send_chat_to_webclient(response);
                 }
             }
         }
@@ -154,6 +179,50 @@ public class ChatHub : Hub
         {
             client.Dispose();
             Console.WriteLine($"[Log][ReceiveLoop] {ex.Message}");
+        }
+    }
+
+    private T? ByteArrayToStructure<T>(byte[] bytes) where T : class
+    {
+        IntPtr ptr = Marshal.AllocHGlobal(bytes.Length);
+        try
+        {
+            Marshal.Copy(bytes, 0, ptr, bytes.Length);
+            return Marshal.PtrToStructure(ptr, typeof(T)) as T;
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(ptr);
+        }
+    }
+
+    private byte[] StructureToByteArray<T>(T obj) where T : class
+    {
+        int size = Marshal.SizeOf(obj);
+        byte[] bytes = new byte[size];
+
+        IntPtr ptr = Marshal.AllocHGlobal(size);
+        try
+        {
+            Marshal.StructureToPtr(obj, ptr, true);
+            Marshal.Copy(ptr, bytes, 0, size);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(ptr);
+        }
+
+        return bytes;
+    }
+
+    private async Task send_chat_to_webclient(string formmat_message)
+    {
+        var connectionId = Context.ConnectionId;
+        if (TcpConnections.TryGetValue(connectionId, out var client))
+        {
+            var stream = client.GetStream();
+            var buffer = Encoding.UTF8.GetBytes(formmat_message);
+            await Clients.Client(connectionId).SendAsync("ReceiveFromServer", formmat_message);
         }
     }
 }
