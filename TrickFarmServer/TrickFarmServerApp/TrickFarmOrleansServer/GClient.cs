@@ -38,7 +38,8 @@ public class GClient : IChatClient
         S2C_MESSAGE_PACKET packet = new S2C_MESSAGE_PACKET();
         packet.size = (byte)Marshal.SizeOf(packet);
         packet.type = (byte)PACKET_TYPE.S2C_CHAT_MESSAGE;
-        packet.message = Encoding.UTF8.GetBytes(message.ToArray());
+        packet.message = new byte[100];
+        Array.Copy(Encoding.UTF8.GetBytes(message), packet.message, Math.Min(message.Length, 100));
 
         byte[] buffer = StructureToByteArray(packet);
         await tcp_socket.GetStream().WriteAsync(buffer, 0, buffer.Length);

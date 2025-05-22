@@ -86,9 +86,10 @@ public class ChatHub : Hub
             C2S_LOGIN_PACKET packet = new C2S_LOGIN_PACKET();
             packet.size = (byte)Marshal.SizeOf(typeof(C2S_LOGIN_PACKET));
             packet.type = (byte)PACKET_TYPE.C2S_LOGIN_USER;
-            packet.user_name = Encoding.UTF8.GetBytes(user_name);
-
+            packet.user_name = new byte[100];
+            Array.Copy(Encoding.UTF8.GetBytes(user_name), packet.user_name, Math.Min(user_name.Length, 100));
             byte[] buffer = StructureToByteArray(packet);
+
             await stream.WriteAsync(buffer, 0, buffer.Length);
             await send_chat_to_webclient($"{user_name}님 접속 성공!");
         }
@@ -107,8 +108,10 @@ public class ChatHub : Hub
             C2S_ENTER_CHATROOM_PACKET packet = new C2S_ENTER_CHATROOM_PACKET();
             packet.size = (byte)Marshal.SizeOf(typeof(C2S_ENTER_CHATROOM_PACKET));
             packet.type = (byte)PACKET_TYPE.C2S_ENTER_CHATROOM;
-            packet.chatroom_name = Encoding.UTF8.GetBytes(chatroom_name);
+            packet.chatroom_name = new byte[100];
+            Array.Copy(Encoding.UTF8.GetBytes(chatroom_name), packet.chatroom_name, Math.Min(chatroom_name.Length, 100));
             byte[] buffer = StructureToByteArray(packet);
+
             await stream.WriteAsync(buffer, 0, buffer.Length);
             await send_chat_to_webclient($"{request.Replace("join ", "")}방에 어서오세요!");
         }
@@ -125,8 +128,10 @@ public class ChatHub : Hub
             C2S_MESSAGE_PACKET packet = new C2S_MESSAGE_PACKET();
             packet.size = (byte)Marshal.SizeOf(typeof(C2S_MESSAGE_PACKET));
             packet.type = (byte)PACKET_TYPE.C2S_CHAT_MESSAGE;
-            packet.message = Encoding.UTF8.GetBytes(message);
+            packet.message = new byte[100];
+            Array.Copy(Encoding.UTF8.GetBytes(message), packet.message, Math.Min(message.Length, 100));
             byte[] buffer = StructureToByteArray(packet);
+
             await stream.WriteAsync(buffer, 0, buffer.Length);
         }
     }
@@ -142,9 +147,12 @@ public class ChatHub : Hub
             C2S_LEAVE_CHATROOM_PACKET packet = new C2S_LEAVE_CHATROOM_PACKET();
             packet.size = (byte)Marshal.SizeOf(typeof(C2S_LEAVE_CHATROOM_PACKET));
             packet.type = (byte)PACKET_TYPE.C2S_LEAVE_CHATROOM;
-            packet.chatroom_name = Encoding.UTF8.GetBytes("leave");
+            packet.chatroom_name = new byte[100];
+            Array.Copy(Encoding.UTF8.GetBytes("leave"), packet.chatroom_name, Math.Min("leave".Length, 100));
             byte[] buffer = StructureToByteArray(packet);
+
             await stream.WriteAsync(buffer, 0, buffer.Length);
+
             client.Dispose();
             Console.WriteLine($"{connectionId}님이 나가셨습니다.");
         }
@@ -182,25 +190,22 @@ public class ChatHub : Hub
         }
     }
 
-    private byte[] StructureToByteArray<T>(T obj) where T : struct
+    private byte[] StructureToByteArray<T>(T obj)
     {
-        int size = Marshal.SizeOf(obj);
-        byte[] bytes = new byte[size];
-        IntPtr ptr = Marshal.AllocHGlobal(size);
-
+        int size = Marshal.SizeOf(typeof(T));
+        IntPtr buffer = Marshal.AllocHGlobal(size);
         try
         {
-            Marshal.StructureToPtr(obj, ptr, true);
-            Marshal.Copy(ptr, bytes, 0, size);
+            Marshal.StructureToPtr(obj, buffer, false);
+            byte[] bytes = new byte[size];
+            Marshal.Copy(buffer, bytes, 0, size);
+            return bytes;
         }
         finally
         {
-            Marshal.FreeHGlobal(ptr);
+            Marshal.FreeHGlobal(buffer);
         }
-
-        return bytes;
     }
-
 
     private async Task send_chat_to_webclient(string formmat_message)
     {

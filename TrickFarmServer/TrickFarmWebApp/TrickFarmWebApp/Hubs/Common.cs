@@ -19,38 +19,38 @@ public enum PACKET_TYPE : byte
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct C2S_LOGIN_PACKET
 {
-    public byte size;
     public byte type;
+    public byte size;
 
-    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
     public byte[] user_name;
 };
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct C2S_ENTER_CHATROOM_PACKET
 {
-    public byte size;
     public byte type;
+    public byte size;
 
-    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
     public byte[] chatroom_name;
 };
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct C2S_LEAVE_CHATROOM_PACKET
 {
-    public byte size;
     public byte type;
+    public byte size;
 
-    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
     public byte[] chatroom_name;
 };
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct C2S_MESSAGE_PACKET
 {
-    public byte size;
     public byte type;
+    public byte size;
 
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
     public byte[] message;
@@ -62,8 +62,8 @@ public struct C2S_MESSAGE_PACKET
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct S2C_MESSAGE_PACKET
 {
-    public byte size;
     public byte type;
+    public byte size;
 
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
     public byte[] message;
