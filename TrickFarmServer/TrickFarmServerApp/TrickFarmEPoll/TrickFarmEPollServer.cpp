@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include "Public/FileDescriptor/SharedMemory.h"
 #include "Public/Network/Network.h"
 
 /*
@@ -10,10 +9,6 @@
 */
 
 int main() {
-    // [Posix Shared memory]
-    SharedMemory shm;
-    
-    // [EPoll Server]
     Networker networker;
     if (!networker.init_network_settings()) {
         printf("Failed to initialize network settings.");

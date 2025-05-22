@@ -182,26 +182,12 @@ public class ChatHub : Hub
         }
     }
 
-    private T? ByteArrayToStructure<T>(byte[] bytes) where T : class
-    {
-        IntPtr ptr = Marshal.AllocHGlobal(bytes.Length);
-        try
-        {
-            Marshal.Copy(bytes, 0, ptr, bytes.Length);
-            return Marshal.PtrToStructure(ptr, typeof(T)) as T;
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(ptr);
-        }
-    }
-
-    private byte[] StructureToByteArray<T>(T obj) where T : class
+    private byte[] StructureToByteArray<T>(T obj) where T : struct
     {
         int size = Marshal.SizeOf(obj);
         byte[] bytes = new byte[size];
-
         IntPtr ptr = Marshal.AllocHGlobal(size);
+
         try
         {
             Marshal.StructureToPtr(obj, ptr, true);
@@ -214,6 +200,7 @@ public class ChatHub : Hub
 
         return bytes;
     }
+
 
     private async Task send_chat_to_webclient(string formmat_message)
     {

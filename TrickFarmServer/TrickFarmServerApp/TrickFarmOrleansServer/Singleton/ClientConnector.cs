@@ -21,6 +21,8 @@ public class ClientConnector : IClientConnector
         TcpListener tcpListener = new TcpListener(IPAddress.Any, port: 5000);
         tcpListener.Start();
 
+        Console.WriteLine("[Log] Accept web client socket");
+
         while (true)
         {
             await check_exist_client();
@@ -29,6 +31,7 @@ public class ClientConnector : IClientConnector
             if (new_client is null || false == new_client.Connected)
                 continue;
 
+            Console.WriteLine("[Success] accept new client");
             await add_gclient(new_client);
         }
     }

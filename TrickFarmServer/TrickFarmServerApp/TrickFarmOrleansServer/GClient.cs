@@ -38,7 +38,7 @@ public class GClient : IChatClient
         S2C_MESSAGE_PACKET packet = new S2C_MESSAGE_PACKET();
         packet.size = (byte)Marshal.SizeOf(packet);
         packet.type = (byte)PACKET_TYPE.S2C_CHAT_MESSAGE;
-        Array.Copy(message.ToArray(), packet.message, message.Length);
+        packet.message = Encoding.UTF8.GetBytes(message.ToArray());
 
         byte[] buffer = StructureToByteArray(packet);
         await tcp_socket.GetStream().WriteAsync(buffer, 0, buffer.Length);
@@ -47,10 +47,11 @@ public class GClient : IChatClient
     public async Task process_request()
     {
         byte[] buffer = new byte[1024];
+        Console.WriteLine("[Client]: start process_request");
         while (true)
         {
             int len = await tcp_socket.GetStream().ReadAsync(buffer, 0, buffer.Length);
-            if(len <= 0) 
+            if (len <= 0)
                 continue;
 
             PACKET_TYPE packet_type = (PACKET_TYPE)buffer[0];
@@ -59,38 +60,39 @@ public class GClient : IChatClient
                 case PACKET_TYPE.C2S_LOGIN_USER:
                     {
                         C2S_LOGIN_PACKET login_info = ByteArrayToStructure<C2S_LOGIN_PACKET>(buffer)!;
-                        if(login_info is null) 
+                        if (login_info.size <= 0)
                             break;
-                        
+
                         string input_user_name = login_info.user_name.ToString()!;
+                        Console.WriteLine($"[Log] 어서오세요! {input_user_name}님!");
                         await make_grain(input_user_name);
                         break;
                     }
                 case PACKET_TYPE.C2S_ENTER_CHATROOM:
                     {
                         C2S_ENTER_CHATROOM_PACKET chatroom_info = ByteArrayToStructure<C2S_ENTER_CHATROOM_PACKET>(buffer)!;
-                        if(chatroom_info is null)
+                        if (chatroom_info.size <= 0)
                             break;
-                        
+
                         chatroom_name = chatroom_info.chatroom_name.ToString()!;
-                        if(chatroom_name is null)
+                        if (chatroom_name is null)
                             break;
 
                         var chatroom_grain = grainFactory.GetGrain<IChatRoomGrain>(chatroom_name);
                         await chatroom_grain.join_user(user_guid, user_name);
-                        break;  
+                        break;
                     }
                 case PACKET_TYPE.C2S_CHAT_MESSAGE:
                     {
                         C2S_MESSAGE_PACKET message_packet = ByteArrayToStructure<C2S_MESSAGE_PACKET>(buffer)!;
-                        if(message_packet is null)
+                        if (message_packet.size <= 0)
                             break;
-                        if(message_packet.message is null)
+                        if (message_packet.message is null)
                             break;
 
                         var chatroom_grain = grainFactory.GetGrain<IChatRoomGrain>(chatroom_name);
                         string chat_message = message_packet.message.ToString()!;
-                        if(chat_message is not null && chat_message.Length > 0) 
+                        if (chat_message is not null && chat_message.Length > 0)
                         {
                             await chatroom_grain.broadcast_message(chat_message);
                         }
@@ -99,9 +101,9 @@ public class GClient : IChatClient
                 case PACKET_TYPE.C2S_LEAVE_CHATROOM:
                     {
                         C2S_LEAVE_CHATROOM_PACKET leave_request = ByteArrayToStructure<C2S_LEAVE_CHATROOM_PACKET>(buffer)!;
-                        if(leave_request is null)
+                        if (leave_request.size <= 0)
                             break;
-                        if(leave_request.chatroom_name is null)
+                        if (leave_request.chatroom_name is null)
                             break;
 
                         string chatroom_name = leave_request.chatroom_name.ToString()!;
@@ -118,13 +120,13 @@ public class GClient : IChatClient
         }
     }
 
-    private T? ByteArrayToStructure<T>(byte[] bytes) where T : class
+    private T? ByteArrayToStructure<T>(byte[] bytes)
     {
         IntPtr ptr = Marshal.AllocHGlobal(bytes.Length);
         try
         {
             Marshal.Copy(bytes, 0, ptr, bytes.Length);
-            return Marshal.PtrToStructure(ptr, typeof(T)) as T;
+            return Marshal.PtrToStructure<T>(ptr);
         }
         finally
         {
@@ -132,7 +134,7 @@ public class GClient : IChatClient
         }
     }
 
-    private byte[] StructureToByteArray<T>(T obj) where T : class
+    private byte[] StructureToByteArray<T>(T obj)
     {
         int size = Marshal.SizeOf(obj);
         byte[] bytes = new byte[size];
@@ -140,8 +142,11 @@ public class GClient : IChatClient
         IntPtr ptr = Marshal.AllocHGlobal(size);
         try
         {
-            Marshal.StructureToPtr(obj, ptr, true);
-            Marshal.Copy(ptr, bytes, 0, size);
+            if (obj is not null)
+            {
+                Marshal.StructureToPtr(obj, ptr, true);
+                Marshal.Copy(ptr, bytes, 0, size);
+            }
         }
         finally
         {

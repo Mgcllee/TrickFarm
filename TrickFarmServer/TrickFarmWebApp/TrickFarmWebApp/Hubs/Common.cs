@@ -14,49 +14,57 @@ public enum PACKET_TYPE : byte
 
 };
 
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
-class BASIC_PACKET
-{
-    public byte size;
-    public byte type;
-};
-
 // [Client to Server packet type]
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-class C2S_LOGIN_PACKET : BASIC_PACKET
+public struct C2S_LOGIN_PACKET
 {
+    public byte size;
+    public byte type;
+
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
-    public byte[] user_name = new byte[10];
+    public byte[] user_name;
 };
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-class C2S_ENTER_CHATROOM_PACKET : BASIC_PACKET
+public struct C2S_ENTER_CHATROOM_PACKET
 {
+    public byte size;
+    public byte type;
+
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
-    public byte[] chatroom_name = new byte[10];
+    public byte[] chatroom_name;
 };
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-class C2S_LEAVE_CHATROOM_PACKET : BASIC_PACKET
+public struct C2S_LEAVE_CHATROOM_PACKET
 {
+    public byte size;
+    public byte type;
+
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
-    public byte[] chatroom_name = new byte[10];
+    public byte[] chatroom_name;
 };
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-class C2S_MESSAGE_PACKET : BASIC_PACKET
+public struct C2S_MESSAGE_PACKET
 {
+    public byte size;
+    public byte type;
+
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
-    public byte[] message = new byte[100];
+    public byte[] message;
 };
 
 
 // [Server to Client packet type]
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-class S2C_MESSAGE_PACKET : BASIC_PACKET
+public struct S2C_MESSAGE_PACKET
 {
+    public byte size;
+    public byte type;
+
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
-    public byte[] message = new byte[100];
+    public byte[] message;
 };
