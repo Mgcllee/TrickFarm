@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Orleans;
+using System.Text;
 
 public class ChatClientGrain : Grain, IChatClientGrain
 {
@@ -39,49 +40,44 @@ public class ChatClientGrain : Grain, IChatClientGrain
         return base.OnDeactivateAsync(reason, cancellationToken);
     }
 
-    public async Task process_packet(string message)
-    {
-        if (message.Length <= 0 || message is null)
-        {
-            return;
-        }
-
-        if (message == "leave")
-        {
-            await leave_client();
-        }
-        else if (message.Contains("join ") && false == enter_chatroom)
-        {
-            user_chatroom_name = message.Split(new[] { ' ' }, 2)[1];
-            var chatroom_grain = grain_factory.GetGrain<IChatRoomGrain>(user_chatroom_name);
-            await chatroom_grain.join_user(grain_id, user_name);
-            await join_chat_room(user_chatroom_name);
-            enter_chatroom = true;
-        }
-        else if (enter_chatroom)
-        {
-            var chatroom_grain = grain_factory.GetGrain<IChatRoomGrain>(user_chatroom_name);
-            await chatroom_grain.broadcast_message($"[{user_chatroom_name}][{user_name}]: {message}");
-        }
-    }
-
-    public Task join_chat_room(string chatroom_name)
-    {
-        user_chatroom_name = chatroom_name;
-        return Task.CompletedTask;
-    }
-
-    public async Task leave_client()
+    public async Task logout_client()
     {
         var chatroom_grain = grain_factory.GetGrain<IChatRoomGrain>(user_chatroom_name);
         if (chatroom_grain is not null)
         {
             await chatroom_grain.leave_user(grain_id);
         }
-        
+
         await ClientConnector.check_exist_client();
 
         DeactivateOnIdle();
+    }
+
+    public async Task join_chatroom(string chatroom_name)
+    {
+        enter_chatroom = true;
+        user_chatroom_name = chatroom_name;
+        Console.WriteLine($"{user_name}님이 {user_chatroom_name}방에 입장 시도");
+        var chatroom_grain = grain_factory.GetGrain<IChatRoomGrain>(user_chatroom_name);
+        await chatroom_grain.join_user(grain_id, user_name);
+    }
+
+    public async Task leave_chatroom()
+    {
+        enter_chatroom = false;
+        Console.WriteLine($"{user_name}님이 {user_chatroom_name}방에서 떠납니다.");
+        var chatroom_grain = grain_factory.GetGrain<IChatRoomGrain>(user_chatroom_name);
+        await chatroom_grain.leave_user(grain_id);
+    }
+
+    public async Task enter_chat_message(string message)
+    {
+        Console.WriteLine($"{user_chatroom_name}방으로 '{message}' 채팅을 보내려고 하려고 함.");
+        if (enter_chatroom)
+        {
+            var chatroom_grain = grain_factory.GetGrain<IChatRoomGrain>(user_chatroom_name);
+            await chatroom_grain.broadcast_message($"[{user_chatroom_name}][{user_name}]: {message}");
+        }
     }
 }
 

@@ -2,7 +2,8 @@
 
 public interface IChatClientGrain : IGrainWithGuidKey
 {
-    Task process_packet(string message);
-    Task leave_client();
-    Task join_chat_room(string chatroom_name);
+    Task enter_chat_message(string message);
+    Task logout_client();
+    Task join_chatroom(string chatroom_name);
+    Task leave_chatroom();
 }

@@ -12,7 +12,7 @@ public class GClient : IChatClient
     private Guid user_guid;
     private string chatroom_name = "";
 
-    public GClient(TcpClient tcpClient, IGrainFactory grainFactory, RedisConnector redisConnector,  Guid user_guid)
+    public GClient(TcpClient tcpClient, IGrainFactory grainFactory, RedisConnector redisConnector, Guid user_guid)
     {
         this.tcp_socket = tcpClient;
         this.grainFactory = grainFactory;
@@ -35,27 +35,33 @@ public class GClient : IChatClient
 
     public async Task send_to_client_chat_message(string message)
     {
-        S2C_MESSAGE_PACKET packet = new S2C_MESSAGE_PACKET();
-        packet.size = (byte)Marshal.SizeOf(packet);
-        packet.type = (byte)PACKET_TYPE.S2C_CHAT_MESSAGE;
-        packet.message = new byte[100];
-        Array.Copy(Encoding.UTF8.GetBytes(message), packet.message, Math.Min(message.Length, 100));
+        byte[] message_bytes = Encoding.UTF8.GetBytes(message);
+        if (message_bytes.Length < 100)
+        {
+            Array.Resize(ref message_bytes, 100);
+        }
 
-        byte[] buffer = StructureToByteArray(packet);
-        await tcp_socket.GetStream().WriteAsync(buffer, 0, buffer.Length);
+        await tcp_socket.GetStream().WriteAsync(StructureToByteArray(
+            new S2C_MESSAGE_PACKET
+            {
+                size = (byte)Marshal.SizeOf(typeof(S2C_MESSAGE_PACKET)),
+                type = (byte)PACKET_TYPE.S2C_CHAT_MESSAGE,
+                message = message_bytes
+            }));
     }
 
     public async Task process_request()
     {
         byte[] buffer = new byte[1024];
-        Console.WriteLine("[Client]: start process_request");
-        while (true)
+        Console.WriteLine("[Log]: start process_request");
+        while (tcp_socket.Connected)
         {
-            int len = await tcp_socket.GetStream().ReadAsync(buffer, 0, buffer.Length);
-            if (len <= 0)
-                continue;
-
+            Console.WriteLine($"[Log] 클라이언트 요청 대기중...");
+            int read = tcp_socket.GetStream().Read(buffer, 0, buffer.Length);
             PACKET_TYPE packet_type = (PACKET_TYPE)buffer[0];
+
+            Console.WriteLine($"[Log] 수신 받은 패킷 타입: {packet_type}");
+
             switch (packet_type)
             {
                 case PACKET_TYPE.C2S_LOGIN_USER:
@@ -64,61 +70,53 @@ public class GClient : IChatClient
                         if (login_info.size <= 0)
                             break;
 
-                        string input_user_name = login_info.user_name.ToString()!;
-                        Console.WriteLine($"[Log] 어서오세요! {input_user_name}님!");
-                        await make_grain(input_user_name);
+                        await make_grain(Encoding.UTF8.GetString(login_info.user_name).TrimEnd('\0'));
                         break;
                     }
                 case PACKET_TYPE.C2S_ENTER_CHATROOM:
                     {
                         C2S_ENTER_CHATROOM_PACKET chatroom_info = ByteArrayToStructure<C2S_ENTER_CHATROOM_PACKET>(buffer)!;
-                        if (chatroom_info.size <= 0)
+                        if (chatroom_info.size <= 0 || chatroom_info.chatroom_name is null)
                             break;
 
-                        chatroom_name = chatroom_info.chatroom_name.ToString()!;
-                        if (chatroom_name is null)
-                            break;
-
-                        var chatroom_grain = grainFactory.GetGrain<IChatRoomGrain>(chatroom_name);
-                        await chatroom_grain.join_user(user_guid, user_name);
-                        break;
-                    }
-                case PACKET_TYPE.C2S_CHAT_MESSAGE:
-                    {
-                        C2S_MESSAGE_PACKET message_packet = ByteArrayToStructure<C2S_MESSAGE_PACKET>(buffer)!;
-                        if (message_packet.size <= 0)
-                            break;
-                        if (message_packet.message is null)
-                            break;
-
-                        var chatroom_grain = grainFactory.GetGrain<IChatRoomGrain>(chatroom_name);
-                        string chat_message = message_packet.message.ToString()!;
-                        if (chat_message is not null && chat_message.Length > 0)
-                        {
-                            await chatroom_grain.broadcast_message(chat_message);
-                        }
+                        chatroom_name = Encoding.UTF8.GetString(chatroom_info.chatroom_name)!;
+                        await grainFactory.GetGrain<IChatClientGrain>(user_guid).join_chatroom(chatroom_name.TrimEnd('\0'));
                         break;
                     }
                 case PACKET_TYPE.C2S_LEAVE_CHATROOM:
                     {
                         C2S_LEAVE_CHATROOM_PACKET leave_request = ByteArrayToStructure<C2S_LEAVE_CHATROOM_PACKET>(buffer)!;
-                        if (leave_request.size <= 0)
-                            break;
-                        if (leave_request.chatroom_name is null)
+                        if (leave_request.size <= 0 || leave_request.chatroom_name is null)
                             break;
 
-                        string chatroom_name = leave_request.chatroom_name.ToString()!;
-                        var chatroom_grain = grainFactory.GetGrain<IChatRoomGrain>(chatroom_name);
-                        await chatroom_grain.leave_user(user_guid);
+                        await grainFactory.GetGrain<IChatClientGrain>(user_guid).leave_chatroom();
+                        break;
+                    }
+                case PACKET_TYPE.C2S_CHAT_MESSAGE:
+                    {
+                        C2S_MESSAGE_PACKET message_packet = ByteArrayToStructure<C2S_MESSAGE_PACKET>(buffer)!;
+                        if (message_packet.size <= 0 || message_packet.message is null)
+                            break;
+
+                        string chat_message = Encoding.UTF8.GetString(message_packet.message).TrimEnd('\0');
+                        await grainFactory.GetGrain<IChatClientGrain>(user_guid).enter_chat_message(chat_message);
                         break;
                     }
                 case PACKET_TYPE.C2S_LOGOUT_USER:
                     {
+                        await grainFactory.GetGrain<IChatClientGrain>(user_guid).logout_client();
                         await ClientConnector.discoonect_client(user_guid);
+                        break;
+                    }
+                default:
+                    {
+                        Console.WriteLine($"[Error] 잘못된 패킷 타입을 수신 {packet_type}");
                         break;
                     }
             }
         }
+
+        Console.WriteLine("소켓 연결이 안되어있음");
     }
 
     private T? ByteArrayToStructure<T>(byte[] bytes)
@@ -156,28 +154,39 @@ public class GClient : IChatClient
 
         return bytes;
     }
- 
-    private async Task make_grain(string user_name)
+
+    private async Task make_grain(string input_name)
     {
-        if (user_name is not null)
+        Console.WriteLine($"_{input_name}_라는 이름으로 시도");
+        if (input_name != "leave"
+            && 0 < input_name.Length && input_name.Length < 10
+            && false == input_name.Contains(" "))
         {
-            this.user_name = user_name;
+            this.user_name = input_name;
             Console.WriteLine($"[LOG] 어서오세요! {this.user_name}님!");
         }
-        else return;
-
-        var is_exist_user_name = await exist_user_name(user_name);
-        if (is_exist_user_name)
+        else
         {
-            if (redisConnector.write_user_info(user_guid, user_name))
+            Console.WriteLine($"{input_name}은(는) 잘못된 형식의 사용자 이름입니다.");
+            if(false == (0 < input_name.Length && input_name.Length < 10))
             {
-                var client_grain = grainFactory.GetGrain<IChatClientGrain>(user_guid);
-                Console.WriteLine($"Redis에 기록 성공! 어서오세요 {user_name}님");
+                Console.WriteLine("길이가 허용범위 아님");
             }
-            else
+            else if(input_name.Contains(" "))
             {
-                Console.WriteLine($"Redis에 기록 실패... user_name: {user_name}");
+                Console.WriteLine("이름 안에 공백이 존재함.");
             }
+            else if(input_name == "leave")
+            {
+                Console.WriteLine("허용되지 않는 이름");
+            }
+            return;
+        }
+
+        if (redisConnector.write_user_info(user_guid, user_name))
+        {
+            var client_grain = grainFactory.GetGrain<IChatClientGrain>(user_guid);
+            Console.WriteLine($"Redis에 기록 성공! 어서오세요 {user_name}님");
         }
         else
         {
@@ -185,20 +194,13 @@ public class GClient : IChatClient
         }
     }
 
-    private Task<bool> exist_user_name(string input_name)
+    public async Task disconnect()
     {
-        // TODO: 금지어, 형식이 추가될 때 마다 하드 코딩은 비효율. > 개선 필요.
-        if (user_name is not "leave"
-            && 0 < user_name.Length && user_name.Length < 10
-            && user_name.Contains(" "))
-            return Task.FromResult(true);
-        else 
-            return Task.FromResult(false);
-    }
-
-    public async Task disconnect() {
         var client_grain = grainFactory.GetGrain<IChatClientGrain>(user_guid);
-        await client_grain.leave_client();
+        if (client_grain != null)
+        {
+            await client_grain.logout_client();
+        }
         tcp_socket.Dispose();
     }
 }

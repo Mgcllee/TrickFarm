@@ -25,23 +25,21 @@ public class ClientConnector : IClientConnector
 
         while (true)
         {
-            await check_exist_client();
+            // await check_exist_client();
+            Console.WriteLine("[Log] 클라이언트 접속 대기중...");
+
             TcpClient new_client = await tcpListener.AcceptTcpClientAsync();
 
             if (new_client is null || false == new_client.Connected)
                 continue;
-
+                
             Console.WriteLine("[Success] accept new client");
-            await add_gclient(new_client);
-        }
-    }
 
-    public async Task add_gclient(TcpClient client_socket)
-    {
-        Guid new_client_guid = Guid.NewGuid();
-        var exist_client = new GClient(client_socket, _grainFactory, redis_connector, new_client_guid);
-        await exist_client.process_request();
-        clients.TryAdd(new_client_guid, exist_client);
+            Guid new_client_guid = Guid.NewGuid();
+            var exist_client = new GClient(new_client, _grainFactory, redis_connector, new_client_guid);
+            clients[new_client_guid] = exist_client;
+            await clients[new_client_guid].process_request();
+        }
     }
 
     static public async Task check_exist_client()
