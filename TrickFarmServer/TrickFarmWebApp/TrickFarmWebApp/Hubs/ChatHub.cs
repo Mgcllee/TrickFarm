@@ -18,20 +18,17 @@ public class ChatHub : Hub
                 var cts = new CancellationTokenSource();
                 var state = new ClientConnection
                 {
-                    TcpClient = tcpClient,
-                    CancellationTokenSource = cts
+                    network_socket = tcpClient,
+                    CancellationTokenSource = cts,
+                    connectionId = connectionId,
                 };
 
                 GlobalClientManager.ClientConnections[connectionId] = state;
-                Console.WriteLine($"[ChatHub] {connectionId} connected to TrickFarm and ReceiveLoop started.");
+                Console.WriteLine($"[ChatHub] connectionId: {connectionId}, ClientConnections에 추가 성공");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ChatHub] ConnectToTrickFarm for {connectionId} failed: {ex.Message}");
-            }
-            finally
-            {
-                Console.WriteLine($"[ChatHub] ConnectToTrickFarm method finished for {connectionId}.");
+                Console.WriteLine($"[ERROR][ChatHub] connectionId: {connectionId} failed: {ex.Message}");
             }
         }
     }
@@ -39,23 +36,59 @@ public class ChatHub : Hub
     public async Task LoginToServer(string user_name)
     {
         var connectionId = Context.ConnectionId;
-        if (GlobalClientManager.ClientConnections.TryGetValue(connectionId, out ClientConnection? clientConnection))
+        if (GlobalClientManager.ClientConnections.ContainsKey(connectionId))
         {
-            clientConnection.TcpClient.Client.Send(StructureToByteArray(new C2S_LOGIN_PACKET
-            {
-                type = (byte)PACKET_TYPE.C2S_LOGIN_USER,
-                size = (byte)Marshal.SizeOf(typeof(C2S_LOGIN_PACKET)),
-                user_name = Encoding.UTF8.GetBytes(user_name)
-            }));
+            Console.WriteLine($"[{connectionId}][Log] _{user_name}_으로 로그인을 시도합니다.");
+            await GlobalClientManager.LoginToServer(connectionId, user_name);
+        }
+        else
+        {
+            Console.WriteLine($"[Log] _{user_name}_으로 로그인을 시도했지만 등록되지 않은 유저.");
         }
     }
 
-    public async Task send_chat_to_webclient(string formmat_message)
+    public async Task LogoutToServer(string user_name)
     {
         var connectionId = Context.ConnectionId;
         if (GlobalClientManager.ClientConnections.ContainsKey(connectionId))
         {
-            await Clients.Client(connectionId).SendAsync("ReceiveChatFromServer", formmat_message);
+            await GlobalClientManager.LogoutToServer(connectionId, user_name);
+        }
+    }
+
+    public async Task DisconnectToServer()
+    {
+        var connectionId = Context.ConnectionId;
+        if (GlobalClientManager.ClientConnections.TryGetValue(connectionId, out var client_connection))
+        {
+            client_connection.network_socket.Dispose();
+        }
+    }
+
+    public async Task JoinToChatrrom(string chatroom_name)
+    {
+        var connectionId = Context.ConnectionId;
+        if(GlobalClientManager.ClientConnections.ContainsKey(connectionId))
+        {
+            await GlobalClientManager.JoinToChatrrom(connectionId, chatroom_name);
+        }
+    }
+
+    public async Task LeaveToChatroom(string chatroom_name)
+    {
+        var connectionId = Context.ConnectionId;
+        if (GlobalClientManager.ClientConnections.ContainsKey(connectionId))
+        {
+            await GlobalClientManager.LeaveToChatroom(connectionId, chatroom_name);
+        }
+    }
+
+    public async Task SendToServer(string message)
+    {
+        var connectionId = Context.ConnectionId;
+        if (GlobalClientManager.ClientConnections.ContainsKey(connectionId))
+        {
+            await GlobalClientManager.SendToServer(connectionId, message);
         }
     }
 }

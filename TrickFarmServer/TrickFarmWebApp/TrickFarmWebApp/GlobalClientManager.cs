@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using System.IO;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -6,9 +8,8 @@ using TrickFarmWebApp.Hubs;
 
 public class GlobalClientManager
 {
-    private TcpClient? _client;
-    private StreamWriter? _writer;
-    private StreamReader? _reader;
+    private TcpClient _client;
+    private NetworkStream _stream;
     private ChatHub? _hubContext;
     private readonly IHubContext<ChatHub> _hub;
 
@@ -16,6 +17,8 @@ public class GlobalClientManager
 
     public GlobalClientManager(IHubContext<ChatHub> hub)
     {
+        _client = new TcpClient("trickfarm-orleans.koreacentral.cloudapp.azure.com", 5000);
+        _stream = _client.GetStream();
         _hub = hub;
         ConnectToTcpServer();
     }
@@ -24,11 +27,6 @@ public class GlobalClientManager
     {
         try
         {
-            _client = new TcpClient("trickfarm-orleans.koreacentral.cloudapp.azure.com", 5000);
-            NetworkStream stream = _client.GetStream();
-            _writer = new StreamWriter(stream) { AutoFlush = true };
-            _reader = new StreamReader(stream);
-
             _ = Task.Run(ReceiveLoop);
         }
         catch (Exception ex)
@@ -42,16 +40,25 @@ public class GlobalClientManager
         try
         {
             byte[] buffer = new byte[1024];
-            while (true)
-            {
-                if (_client is null) break;
-                int len = await _client.GetStream().ReadAsync(buffer, 0, buffer.Length);
 
+            if(false == _client.Connected)
+            {
+                Console.WriteLine("[Log] 수신을 위한 TCP소켓이 연결되지 않음");
+                return;
+            }
+
+            while (_client.Connected)
+            {
+                Console.WriteLine("ReceiveLoop에서 수신 대기중...");
+                int len = await _client.GetStream().ReadAsync(buffer, 0, buffer.Length);
                 if (len <= 0)
                     continue;
 
                 PACKET_TYPE packet_type = (PACKET_TYPE)buffer[0];
-                switch(packet_type)
+
+                Console.WriteLine($"[Log] 수신 받은 패킷 타입: {packet_type}");
+
+                switch (packet_type)
                 {
                     case PACKET_TYPE.S2C_CHAT_MESSAGE:
                         var message_packet = ByteArrayToStructure<C2S_MESSAGE_PACKET>(buffer);
@@ -73,7 +80,119 @@ public class GlobalClientManager
         }
     }
 
-    private byte[] StructureToByteArray<T>(T obj)
+    static public async Task LoginToServer(string connectionId, string user_name)
+    {
+        if (ClientConnections.TryGetValue(connectionId, out ClientConnection? clientConnection)
+            && clientConnection.network_socket.Connected)
+        {
+            byte[] user_name_bytes = Encoding.UTF8.GetBytes(user_name);
+
+            if (user_name_bytes.Length < 100)
+            {
+                Array.Resize(ref user_name_bytes, 100);
+            }
+
+            await clientConnection.network_socket.GetStream().WriteAsync(StructureToByteArray(
+                new C2S_LOGIN_PACKET
+                {
+                    type = (byte)PACKET_TYPE.C2S_LOGIN_USER,
+                    size = (byte)Marshal.SizeOf(typeof(C2S_LOGIN_PACKET)),
+                    user_name = user_name_bytes
+                }));
+
+            Console.WriteLine($"[{connectionId}][Log][GlobalClientManager.LoginToServer] _{user_name_bytes}_ 이름으로 패킷 전송 완료, 크기: {(byte)Marshal.SizeOf(typeof(C2S_LOGIN_PACKET))}");
+        }
+        else
+        {
+            Console.WriteLine($"[Error][GlobalClientManager.LoginToServer] _{user_name}_ 이름의 유저가 없음.");
+        }
+    }
+
+    static public async Task LogoutToServer(string connectionId, string user_name)
+    {
+        if(ClientConnections.TryGetValue(connectionId,out ClientConnection? clientConnection))
+        {
+            byte[] user_name_bytes = Encoding.UTF8.GetBytes(user_name);
+
+            if (user_name_bytes.Length < 100)
+            {
+                Array.Resize(ref user_name_bytes, 100);
+            }
+
+            await clientConnection.network_socket.GetStream().WriteAsync(StructureToByteArray(
+                new C2S_LOGOUT_PACKET
+                {
+                    type = (byte)PACKET_TYPE.C2S_LOGOUT_USER,
+                    size = (byte)Marshal.SizeOf(typeof(C2S_LOGOUT_PACKET)),
+                    user_name = user_name_bytes
+                }));
+        }
+    }
+
+    static public async Task JoinToChatrrom(string connectionId, string chatroom_name)
+    {
+        if (ClientConnections.TryGetValue(connectionId, out ClientConnection? clientConnection))
+        {
+            byte[] chatroom_name_bytes = Encoding.UTF8.GetBytes(chatroom_name);
+
+            if (chatroom_name_bytes.Length < 100)
+            {
+                Array.Resize(ref chatroom_name_bytes, 100);
+            }
+
+            await clientConnection.network_socket.GetStream().WriteAsync(StructureToByteArray(
+                new C2S_ENTER_CHATROOM_PACKET
+                {
+                    type = (byte)PACKET_TYPE.C2S_ENTER_CHATROOM,
+                    size = (byte)Marshal.SizeOf(typeof(C2S_ENTER_CHATROOM_PACKET)),
+                    chatroom_name = chatroom_name_bytes
+                }));
+        }
+    }
+
+    static public async Task LeaveToChatroom(string connectionId, string chatroom_name)
+    {
+        if (ClientConnections.TryGetValue(connectionId, out ClientConnection? clientConnection))
+        {
+            byte[] chatroom_name_bytes = Encoding.UTF8.GetBytes(chatroom_name);
+
+            if (chatroom_name_bytes.Length < 100)
+            {
+                Array.Resize(ref chatroom_name_bytes, 100);
+            }
+
+            await clientConnection.network_socket.GetStream().WriteAsync(StructureToByteArray(
+                new C2S_LEAVE_CHATROOM_PACKET
+                {
+                    type = (byte)PACKET_TYPE.C2S_LEAVE_CHATROOM,
+                    size = (byte)Marshal.SizeOf(typeof(C2S_LEAVE_CHATROOM_PACKET)),
+                    chatroom_name = chatroom_name_bytes
+                }));
+        }
+    }
+
+    static public async Task SendToServer(string connectionId, string message)
+    {
+        if(ClientConnections.TryGetValue(connectionId,out ClientConnection? clientConnection))
+        {
+            byte[] message_bytes = Encoding.UTF8.GetBytes(message);
+
+            if (message_bytes.Length < 100)
+            {
+                Array.Resize(ref message_bytes, 100);
+            }
+
+            await clientConnection.network_socket.GetStream().WriteAsync(StructureToByteArray(
+                new C2S_MESSAGE_PACKET
+                {
+                    type = (byte)PACKET_TYPE.C2S_CHAT_MESSAGE,
+                    size = (byte)Marshal.SizeOf(typeof(C2S_MESSAGE_PACKET)),
+                    message = message_bytes
+                }));
+        }
+    }
+
+    static private byte[] StructureToByteArray<T>(T obj)
     {
         int size = Marshal.SizeOf(typeof(T));
         IntPtr buffer = Marshal.AllocHGlobal(size);
@@ -82,6 +201,7 @@ public class GlobalClientManager
             Marshal.StructureToPtr(obj, buffer, false);
             byte[] bytes = new byte[size];
             Marshal.Copy(buffer, bytes, 0, size);
+            Array.Resize(ref bytes, 1024);
             return bytes;
         }
         finally
@@ -90,7 +210,7 @@ public class GlobalClientManager
         }
     }
 
-    private T? ByteArrayToStructure<T>(byte[] bytes)
+    static private T? ByteArrayToStructure<T>(byte[] bytes)
     {
         IntPtr ptr = Marshal.AllocHGlobal(bytes.Length);
         try

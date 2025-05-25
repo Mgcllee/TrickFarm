@@ -81,6 +81,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+
+    }
+
+    private async Task init_hub_connection()
+    {
         hubConnection = new HubConnectionBuilder()
             .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
             .WithAutomaticReconnect()
@@ -107,35 +112,32 @@
 
     private async Task Send()
     {
-        if (hubConnection is not null && IsConnected)
+        if (string.IsNullOrEmpty(messageInput))
         {
-            if (string.IsNullOrEmpty(messageInput))
-            {
-                return;
-            }
+            return;
+        }
 
-            if (string.IsNullOrEmpty(user_name))
-            {
-                await hubConnection.SendAsync("LoginToServer", messageInput);
-                user_name = messageInput;
-                messageInput = "join + 입장할 채팅방 이름";
-            }
-            else if (messageInput.Contains("join") && enter_chatroom is false)
-            {
-                await hubConnection.SendAsync("JoinToChatrrom", messageInput);
-                enter_chatroom = true;
-            }
-            else if (enter_chatroom)
-            {
-                await hubConnection.SendAsync("SendToServer", messageInput);
-            }
-
-            messageInput = "";
+        if (string.IsNullOrEmpty(user_name))
+        {
+            await init_hub_connection();
+            await hubConnection.SendAsync("LoginToServer", messageInput);
+            user_name = messageInput;
+        }
+        else if (messageInput.Contains("join") && enter_chatroom is false && IsConnected)
+        {
+            string chatroom_name = messageInput.Substring("join".Length + 1);
+            await hubConnection.SendAsync("JoinToChatrrom", chatroom_name);
+            enter_chatroom = true;
+        }
+        else if (enter_chatroom && IsConnected)
+        {
+            await hubConnection.SendAsync("SendToServer", messageInput);
         }
         else
         {
             messageInput = $"hubConnection is {hubConnection is null} and IsConnected is {IsConnected}";
         }
+        messageInput = "";
     }
 
     public async ValueTask DisposeAsync()

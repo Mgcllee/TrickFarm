@@ -8,12 +8,6 @@ using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton(provider =>
-{
-    var hubContext = provider.GetRequiredService<IHubContext<ChatHub>>();
-    return new GlobalClientManager(hubContext);
-});
-
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
@@ -30,6 +24,13 @@ builder.Services.AddSignalR(options =>
     options.KeepAliveInterval = TimeSpan.FromSeconds(300);
     options.ClientTimeoutInterval = TimeSpan.FromSeconds(600);
 });
+
+builder.Services.AddSingleton(provider =>
+{
+    var hubContext = provider.GetRequiredService<IHubContext<ChatHub>>();
+    return new GlobalClientManager(hubContext);
+});
+
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
