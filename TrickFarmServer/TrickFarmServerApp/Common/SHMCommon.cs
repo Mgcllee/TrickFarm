@@ -21,6 +21,13 @@ public enum PACKET_TYPE : byte
 // [Client to Server packet type]
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
+public struct BASIC_PACKET
+{
+    public byte type;
+    public byte size;
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct C2S_LOGIN_PACKET
 {
     public byte type;

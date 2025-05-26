@@ -52,13 +52,13 @@ public class GClient : IChatClient
 
     public async Task process_request()
     {
-        byte[] buffer = new byte[1024];
         Console.WriteLine("[Log]: start process_request");
         while (tcp_socket.Connected)
         {
             Console.WriteLine($"[Log] 클라이언트 요청 대기중...");
+            byte[] buffer = new byte[1024];
             int read = tcp_socket.GetStream().Read(buffer, 0, buffer.Length);
-            PACKET_TYPE packet_type = (PACKET_TYPE)buffer[0];
+            PACKET_TYPE packet_type = (PACKET_TYPE)ByteArrayToStructure<BASIC_PACKET>(buffer).type;
 
             Console.WriteLine($"[Log] 수신 받은 패킷 타입: {packet_type}");
 
