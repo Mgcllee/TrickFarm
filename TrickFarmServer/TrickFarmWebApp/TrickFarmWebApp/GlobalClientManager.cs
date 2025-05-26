@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using TrickFarmWebApp.Hubs;
 
-public class GlobalClientManager
+public class GlobalClientManager : BackgroundService
 {
     private TcpClient _client;
     private NetworkStream _stream;
@@ -17,21 +17,49 @@ public class GlobalClientManager
 
     public GlobalClientManager(IHubContext<ChatHub> hub)
     {
-        _client = new TcpClient("trickfarm-orleans.koreacentral.cloudapp.azure.com", 5000);
-        _stream = _client.GetStream();
         _hub = hub;
-        ConnectToTcpServer();
+        Console.WriteLine("[Log] GlobalClientManager 생성자 호출됨");
     }
 
-    private void ConnectToTcpServer()
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
         {
-            _ = Task.Run(ReceiveLoop);
+            Console.WriteLine("[Log] GlobalClientManager.ExecuteAsync 시작됨");
+
+            _client = new TcpClient();
+            Console.WriteLine("[Log] TcpClient 객체 생성 완료");
+
+            await _client.ConnectAsync("trickfarm-orleans.koreacentral.cloudapp.azure.com", 5000);
+            Console.WriteLine("[Log] TCP 연결 성공");
+
+            _stream = _client.GetStream();
+            Console.WriteLine("[Log] Stream 객체 초기화 완료");
+
+            await ReceiveLoop();
+        }
+        catch (SocketException ex)
+        {
+            Console.WriteLine($"[TCP 연결 실패 - 소켓 예외] {ex.SocketErrorCode} - {ex.Message}");
+        }
+        catch (IOException ioEx)
+        {
+            Console.WriteLine($"[TCP 수신 오류 - IO 예외] {ioEx.Message}");
+            if (ioEx.InnerException is SocketException sockEx)
+            {
+                Console.WriteLine($"[내부 소켓 예외] {sockEx.SocketErrorCode} - {sockEx.Message}");
+            }
+        }
+        catch (NullReferenceException nullEx)
+        {
+            Console.WriteLine($"[NullReferenceException] {nullEx.Message}");
+            Console.WriteLine($"[스택트레이스] {nullEx.StackTrace}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[TCP 연결 실패] {ex.Message}");
+            Console.WriteLine($"[알 수 없는 예외] {ex.Message}");
+            Console.WriteLine($"[스택트레이스] {ex.StackTrace}");
         }
     }
 
@@ -39,39 +67,27 @@ public class GlobalClientManager
     {
         try
         {
+            Console.WriteLine("ReceiveLoop에서 수신 대기중...");
             byte[] buffer = new byte[1024];
-
-            if(false == _client.Connected)
-            {
-                Console.WriteLine("[Log] 수신을 위한 TCP소켓이 연결되지 않음");
+            int len = await _stream.ReadAsync(buffer, 0, buffer.Length);
+            if (len <= 0)
                 return;
-            }
 
-            while (_client.Connected)
+            PACKET_TYPE packet_type = (PACKET_TYPE)buffer[0];
+            Console.WriteLine($"[Log] 수신 받은 패킷 타입: {packet_type}");
+            switch (packet_type)
             {
-                Console.WriteLine("ReceiveLoop에서 수신 대기중...");
-                int len = await _client.GetStream().ReadAsync(buffer, 0, buffer.Length);
-                if (len <= 0)
-                    continue;
-
-                PACKET_TYPE packet_type = (PACKET_TYPE)buffer[0];
-
-                Console.WriteLine($"[Log] 수신 받은 패킷 타입: {packet_type}");
-
-                switch (packet_type)
-                {
-                    case PACKET_TYPE.S2C_CHAT_MESSAGE:
-                        var message_packet = ByteArrayToStructure<C2S_MESSAGE_PACKET>(buffer);
-                        if (message_packet.size > 0)
-                        {
-                            string msg = Encoding.UTF8.GetString(message_packet.message, 0, message_packet.message.Length);
-                            await _hub.Clients.All.SendAsync("ReceiveChatFromServer", msg);
-                        }
-                        break;
-                    default:
-                        Console.WriteLine($"[알 수 없는 패킷 타입] {packet_type}");
-                        break;
-                }
+                case PACKET_TYPE.S2C_CHAT_MESSAGE:
+                    var message_packet = ByteArrayToStructure<S2C_MESSAGE_PACKET>(buffer);
+                    if (message_packet.size > 0)
+                    {
+                        string msg = Encoding.UTF8.GetString(message_packet.message, 0, message_packet.message.Length);
+                        await _hub.Clients.All.SendAsync("ReceiveChatFromServer", msg);
+                    }
+                    break;
+                default:
+                    Console.WriteLine($"[알 수 없는 패킷 타입] {packet_type}");
+                    break;
             }
         }
         catch (Exception ex)
@@ -110,7 +126,7 @@ public class GlobalClientManager
 
     static public async Task LogoutToServer(string connectionId, string user_name)
     {
-        if(ClientConnections.TryGetValue(connectionId,out ClientConnection? clientConnection))
+        if (ClientConnections.TryGetValue(connectionId, out ClientConnection? clientConnection))
         {
             byte[] user_name_bytes = Encoding.UTF8.GetBytes(user_name);
 
@@ -173,7 +189,7 @@ public class GlobalClientManager
 
     static public async Task SendToServer(string connectionId, string message)
     {
-        if(ClientConnections.TryGetValue(connectionId,out ClientConnection? clientConnection))
+        if (ClientConnections.TryGetValue(connectionId, out ClientConnection? clientConnection))
         {
             byte[] message_bytes = Encoding.UTF8.GetBytes(message);
 

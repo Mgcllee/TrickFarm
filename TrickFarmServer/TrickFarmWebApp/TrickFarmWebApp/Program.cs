@@ -25,11 +25,7 @@ builder.Services.AddSignalR(options =>
     options.ClientTimeoutInterval = TimeSpan.FromSeconds(600);
 });
 
-builder.Services.AddSingleton(provider =>
-{
-    var hubContext = provider.GetRequiredService<IHubContext<ChatHub>>();
-    return new GlobalClientManager(hubContext);
-});
+builder.Services.AddHostedService<GlobalClientManager>();
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
