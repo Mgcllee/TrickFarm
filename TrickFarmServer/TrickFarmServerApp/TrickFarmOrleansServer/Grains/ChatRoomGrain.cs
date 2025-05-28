@@ -91,7 +91,17 @@ public class ChatRoomGrain : Grain, IChatRoomGrain
 
     public override Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
     {
-        Console.WriteLine($"채팅룸 {this.GetPrimaryKeyString()} 이 {room_member.Count()}명 이므로 제거되었습니다.");
+        // Console.WriteLine($"채팅룸 {this.GetPrimaryKeyString()} 이 {room_member.Count()}명 이므로 제거되었습니다.");
+
+        // TODO: 멤버가 1명 이상일 경우, 이 메서드로 Grain 제거 방지 필요.
+        // Grain의 상태 저장 기능 사용해보기
+
+        if(room_member.Count > 0)
+        {
+            // Grain 상태 저장 혹은 비활성화 방지 코드
+        }
+
+        Console.WriteLine($"[ChatRoomGrain::OnDeactivateAsync] {this.GetPrimaryKeyString()} 방이 제거되었습니다.");
         return base.OnDeactivateAsync(reason, cancellationToken);
     }
 }
