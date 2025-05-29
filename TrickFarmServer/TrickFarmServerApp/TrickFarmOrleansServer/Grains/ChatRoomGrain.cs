@@ -1,14 +1,11 @@
 ﻿using System.Collections.Concurrent;
 
-public class ChatRoomGrain : Grain, IChatRoomGrain
+public class ChatRoomGrain : Grain<ChatroomGrainState>, IChatRoomGrain
 {
     private IGrainFactory grain_factory;
     private ClientConnector client_connector = null!;
     private RedisConnector redis_connector = null!;
-
-    private readonly List<string> chat_log = new();
-    private readonly ConcurrentDictionary<Guid, string> room_member
-        = new ConcurrentDictionary<Guid, string>();
+    
 
     public override Task OnActivateAsync(CancellationToken cancellationToken)
     {
@@ -26,7 +23,7 @@ public class ChatRoomGrain : Grain, IChatRoomGrain
     public async Task join_user(Guid user_guid, string user_name)
     {
         string formatted_message;
-        if (room_member.TryAdd(user_guid, user_name))
+        if (State.room_member.TryAdd(user_guid, user_name))
         {
             formatted_message = $"{user_name}님이 {this.GetPrimaryKeyString()} 방에 입장하셨습니다.";
             if (ClientConnector.clients.TryGetValue(user_guid, out var g_client))
@@ -52,13 +49,13 @@ public class ChatRoomGrain : Grain, IChatRoomGrain
 
     public Task<List<string>> get_chat_log()
     {
-        return Task.FromResult(chat_log);
+        return Task.FromResult(State.chat_log);
     }
 
     public async Task broadcast_message(string formatted_message)
     {
-        chat_log.Add(formatted_message);
-        foreach (var client in room_member)
+        State.chat_log.Add(formatted_message);
+        foreach (var client in State.room_member)
         {
             if (ClientConnector.clients.TryGetValue(client.Key, out var g_client))
             {
@@ -70,10 +67,10 @@ public class ChatRoomGrain : Grain, IChatRoomGrain
 
     public async Task leave_user(Guid user_guid) 
     { 
-        if(room_member.TryRemove(user_guid, out var value))
+        if(State.room_member.TryRemove(user_guid, out var value))
         {
             string formatted_message = $"{value}님이 {this.GetPrimaryKeyString()} 방을 떠났습니다.";
-            foreach (var client in room_member)
+            foreach (var client in State.room_member)
             {
                 if (client.Key != user_guid)
                 {
@@ -83,7 +80,7 @@ public class ChatRoomGrain : Grain, IChatRoomGrain
             Console.WriteLine(formatted_message);
         }
 
-        if(room_member.Count() == 0)
+        if(State.room_member.Count() == 0)
         {
             DeactivateOnIdle();
         }
@@ -91,12 +88,12 @@ public class ChatRoomGrain : Grain, IChatRoomGrain
 
     public override Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
     {
-        // Console.WriteLine($"채팅룸 {this.GetPrimaryKeyString()} 이 {room_member.Count()}명 이므로 제거되었습니다.");
+        // Console.WriteLine($"채팅룸 {this.GetPrimaryKeyString()} 이 {State.room_member.Count()}명 이므로 제거되었습니다.");
 
         // TODO: 멤버가 1명 이상일 경우, 이 메서드로 Grain 제거 방지 필요.
         // Grain의 상태 저장 기능 사용해보기
 
-        if(room_member.Count > 0)
+        if(State.room_member.Count > 0)
         {
             // Grain 상태 저장 혹은 비활성화 방지 코드
         }
