@@ -116,7 +116,7 @@ public class GClient : IChatClient
             }
         }
 
-        Console.WriteLine("소켓 연결이 안되어있음");
+        Console.WriteLine("[Error] Not exist Socket");
     }
 
     private T? ByteArrayToStructure<T>(byte[] bytes)

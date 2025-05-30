@@ -25,8 +25,7 @@ public class ClientConnector : IClientConnector
 
         while (true)
         {
-            // await check_exist_client();
-            Console.WriteLine("[Log] 클라이언트 접속 대기중...");
+            Console.WriteLine("[Log] Wait for new client...");
 
             TcpClient new_client = await tcpListener.AcceptTcpClientAsync();
 
@@ -64,7 +63,7 @@ public class ClientConnector : IClientConnector
 
         if (gClient is not null)
         {
-            Console.WriteLine($"{gClient.user_name}님 연결 종료");
+            Console.WriteLine($"[Log] {gClient.user_name}님 연결 종료");
             await gClient.disconnect();
         }
         else 
