@@ -14,12 +14,14 @@ public class ChatClientGrain : Grain<ChatClientGrainState>, IChatClientGrain
         this.redis_connector = redis_connector;
     }
 
-    public override Task OnActivateAsync(CancellationToken cancellationToken)
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         State.grain_id = this.GetPrimaryKey();
         State.user_name = redis_connector.get_user_name(State.grain_id)!;
+        
+        await base.OnActivateAsync(cancellationToken);
+        
         Console.WriteLine($"ChatClientGrain::OnActivateAsync: {State.grain_id}, {State.user_name}");
-        return Task.CompletedTask;
     }
 
     public override Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)

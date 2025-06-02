@@ -7,10 +7,11 @@ public class ChatRoomGrain : Grain<ChatroomGrainState>, IChatRoomGrain
     private RedisConnector redis_connector = null!;
     
 
-    public override Task OnActivateAsync(CancellationToken cancellationToken)
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
+        await base.OnActivateAsync(cancellationToken);
+        
         Console.WriteLine($"[ChatRoomGrain::OnActivateAsync] {this.GetPrimaryKeyString()} 이름의 채팅방이 생성되었습니다.");
-        return Task.CompletedTask;
     }
 
     public ChatRoomGrain(IGrainFactory grain_factory, ClientConnector client_connector, RedisConnector redis_connector)
