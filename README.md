@@ -15,7 +15,7 @@
 
 ## Orleans with Dashboard, Azure VM(Ubuntu), Blazor 클라이언트트 실행 화면
 
-> **이미지를 클릭하시면 큰 이미지에서 확인하실 수 있습니다.**
+> **이미지를 클릭하시면 큰 이미지에서 채팅 내용과 실행 내용을 확인할 수 있습니다.**
 
 ![실행화면](/Document/Image/TrickFarmServer_runtime_0414.png)  
 
